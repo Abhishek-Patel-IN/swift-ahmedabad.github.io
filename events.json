@@ -1,0 +1,31 @@
+{
+  "subtitle": "A few of our published gatherings. Browse Luma for the complete calendar and new announcements.",
+  "events": [
+    {
+      "title": "Swift Ahmedabad WWDC26 Watch Party",
+      "period": "2026",
+      "status": "Past event",
+      "venue": "Ahmedabad",
+      "description": "The community came together to watch Apple's WWDC keynote and discuss the announcements.",
+      "url": "https://luma.com/b08evqjf",
+      "image": "assets/designs/wwdc-2026.jpg"
+    },
+    {
+      "title": "Swift Ahmedabad July’25 Meetup",
+      "period": "July 2025",
+      "status": "Past event",
+      "venue": "Tuvoc Technologies",
+      "description": "IndeHub Hackathon City Demo Day, with live demos of projects built using WWDC25 technologies.",
+      "url": "https://luma.com/fu6yaqfs",
+      "image": "assets/designs/july-2025-meetup.jpg"
+    },
+    {
+      "title": "Swift Ahmedabad February’25 Meetup",
+      "period": "February 2025",
+      "status": "Past event",
+      "venue": "Ahmedabad Management Association",
+      "description": "An iOS development gathering with talks, a keynote session, and discussions between local developers.",
+      "url": "https://luma.com/ghp1rm2g"
+    }
+  ]
+}

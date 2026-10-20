@@ -13,22 +13,30 @@ const icons = {
 
 async function loadContent() {
     try {
-        // Load links.json
-        const linksResponse = await fetch('links.json');
+        const [linksResponse, statsResponse, appResponse] = await Promise.all([
+            fetch('links.json'),
+            fetch('stats.json'),
+            fetch('app.json')
+        ]);
+        
         const linksData = await linksResponse.json();
+        const statsData = await statsResponse.json();
+        const appData = await appResponse.json();
         
         // Render community info
         document.getElementById('community-name').textContent = linksData.community.name;
-        document.getElementById('community-tagline').textContent = linksData.community.tagline;
+        document.getElementById('community-description').textContent = linksData.community.description || "A community of Apple-platform engineers, designers and students in Ahmedabad. We meet to learn, share what we know, and grow the next generation of Swift builders in the city.";
         document.getElementById('community-logo').src = linksData.community.logo;
         document.getElementById('community-logo').alt = linksData.community.name + ' Logo';
         document.getElementById('navbar-logo-img').src = linksData.community.logo;
         document.getElementById('navbar-logo-img').alt = linksData.community.name + ' Logo';
         document.title = linksData.community.name;
-        
-        // Load stats.json
-        const statsResponse = await fetch('stats.json');
-        const statsData = await statsResponse.json();
+
+        // Set Hero CTAs
+        const whatsappLink = linksData.links.find(l => l.id === 'whatsapp');
+        const lumaLink = linksData.links.find(l => l.id === 'luma');
+        if (whatsappLink) document.getElementById('hero-cta-primary').href = whatsappLink.url;
+        if (lumaLink) document.getElementById('hero-cta-secondary').href = lumaLink.url;
         
         // Render stats
         const statsContainer = document.getElementById('stats-container');
@@ -38,13 +46,6 @@ async function loadContent() {
         const container = document.getElementById('links-container');
         container.innerHTML = linksData.links.map(link => createCard(link)).join('');
         
-        // Load team.json
-        // (Now loaded in team.js)
-        
-        // Load app.json
-        const appResponse = await fetch('app.json');
-        const appData = await appResponse.json();
-        
         // Render app info
         document.getElementById('app-name').textContent = appData.app.name;
         document.getElementById('app-tagline').textContent = appData.app.tagline;
@@ -52,13 +53,54 @@ async function loadContent() {
         document.getElementById('testflight-btn').href = appData.app.testFlightUrl;
         document.getElementById('app-icon').src = appData.app.icon;
         
-        // Render app features
-        // (Now loaded in swift-talks.js)
-        
     } catch (error) {
         console.error('Error loading content:', error);
         document.getElementById('links-container').innerHTML = '<p style="text-align: center; color: #888;">Error loading links. Please try again later.</p>';
     }
+}
+
+async function loadPrograms() {
+    try {
+        const response = await fetch('programs.json');
+        const data = await response.json();
+        const container = document.getElementById('programs-container');
+        container.innerHTML = data.programs.map(createProgramCard).join('');
+    } catch (error) {
+        console.error('Error loading programs:', error);
+    }
+}
+
+function createProgramCard(program) {
+    return `
+        <a href="${program.url}" target="_blank" rel="noopener noreferrer" class="program-card">
+            <div class="program-icon">${program.emoji}</div>
+            <h3>${program.name}</h3>
+            <p>${program.description}</p>
+            <span class="program-stat">${program.stat}</span>
+        </a>
+    `;
+}
+
+async function loadSponsors() {
+    try {
+        const response = await fetch('sponsors.json');
+        const data = await response.json();
+        document.getElementById('sponsors-subtitle').textContent = data.subtitle;
+        const container = document.getElementById('sponsors-container');
+        container.innerHTML = data.sponsors.map(createSponsorCard).join('');
+    } catch (error) {
+        console.error('Error loading sponsors:', error);
+    }
+}
+
+function createSponsorCard(sponsor) {
+    const href = sponsor.url || '#';
+    return `
+        <a href="${href}" target="_blank" rel="noopener noreferrer" class="sponsor-card">
+            <span class="sponsor-number">S${String(sponsor.number).padStart(3, '0')}</span>
+            <span class="sponsor-name">${sponsor.name}</span>
+        </a>
+    `;
 }
 
 function createCard(link) {
@@ -157,6 +199,8 @@ function createStatsHTML(statsData) {
 // Load content when page loads
 document.addEventListener('DOMContentLoaded', () => {
     loadContent();
+    loadPrograms();
+    loadSponsors();
     initTabs();
     initStatsGame();
 });
