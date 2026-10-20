@@ -107,6 +107,10 @@ assert.equal(scene.dataset.expandedCopy, 'false', 'Normal text restores the inte
 identityTitle.rect.width = 600; observeLayout();
 assert.equal(scene.dataset.expandedCopy, 'true', 'Wide enlarged title also gets independent space');
 identityTitle.rect.width = 300; observeLayout();
+portrait.matches = true; observeLayout();
+assert.equal(scene.dataset.expandedCopy, 'true', 'Phone introduction and calendar link stay above the artwork');
+portrait.matches = false; observeLayout();
+assert.equal(scene.dataset.expandedCopy, 'false', 'Desktop restores integrated copy when it fits');
 assert.equal(panel.hidden, true);
 assert.equal(requested.length, 0, 'Optional colors wait until the scene approaches');
 observers[0].callback([{isIntersecting: true}]);

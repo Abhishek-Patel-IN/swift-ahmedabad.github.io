@@ -48,14 +48,6 @@ function scrollToCurrentAnchor() {
   if (target) target.scrollIntoView({block: 'start', behavior: 'instant'});
 }
 
-// The sticky scene is complete once its bottom meets the viewport bottom.
-function scrollProgress(top, height, viewport, stickyTop) {
-  const travel = height - (viewport - stickyTop);
-  return travel > 0 ? Math.max(0, Math.min(1, (stickyTop - top) / travel)) : 0;
-}
-
-const story = document.querySelector('.liquid-story');
-const storyCards = [...document.querySelectorAll('.story-card')];
 /* RETIRED THEMES / HERO: detached glass slab and City of Swift motion.
 const slab = document.querySelector('.slab-front');
 const art = document.querySelector('.liquid-art');
@@ -100,27 +92,7 @@ function updateMotion() {
     const drift = reducedMotion.matches ? 0 : Math.max(-12, Math.min(12, (innerHeight / 2 - rect.top - rect.height / 2) / (innerHeight + rect.height) * 24));
     cityScene.style.setProperty('--city-drift', `${drift.toFixed(2)}px`);
   }
-  if (reducedMotion.matches) {
-    storyCards.forEach(card => { card.inert = false; });
-    return;
-  }
-  if (story) {
-    const rect = story.getBoundingClientRect();
-    const progress = scrollProgress(rect.top, rect.height, innerHeight, top);
-    story.style.setProperty('--story-progress', progress.toFixed(4));
-    storyCards.forEach((card, index) => {
-      const active = index === Math.min(2, Math.floor(progress * 3));
-      card.classList.toggle('mobile-active', active);
-      card.inert = innerWidth <= 760 && !active;
-    });
-    /* RETIRED HERO: detached slab no longer belongs to the connected city.
-    const artRect = art.getBoundingClientRect();
-    if (artRect.bottom > 0 && artRect.top < innerHeight) {
-      const tilt = Math.max(0, Math.min(1, scrollY / 600));
-      slab.style.transform = `rotate(${-13 + tilt * 25}deg) rotateY(${-14 + tilt * 32}deg) scale(${1 + tilt * .1})`;
-    }
-    */
-  }
+
 }
 function scheduleMotion() {
   if (!framePending) {
@@ -220,7 +192,7 @@ function contentHTML(type, data, theme) {
     const memberHTML = member => contentLink(member.linkedIn, `<span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}</span><div><h3>${text(member.name)}</h3><p>${text(member.about)}</p><span>Connect on LinkedIn ↗</span></div>`, 'community-member');
     return `<div class="member-grid">${data.members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${data.members.length} team members <span aria-hidden="true">+</span></summary><div class="member-grid">${data.members.slice(4).map(memberHTML).join('')}</div></details>`;
   }
-  if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => contentLink(sponsor.url, `<span class="host-number">S${String(sponsor.number).padStart(3, '0')}</span><strong>${text(sponsor.name)}</strong><span aria-hidden="true">↗</span>`, 'community-host')).join('')}</div>`;
+  if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => contentLink(sponsor.url, `<strong>${text(sponsor.name)}</strong><span aria-hidden="true">↗</span>`, 'community-host')).join('')}</div>`;
   if (type === 'stats') {
     const labels = {totalEvents:'Meetups', totalParticipants:'Participants', averageParticipants:'Average per meetup', totalSpeakers:'Speakers', topicsCovered:'Topics covered', totalVenues:'Venues', totalSponsors:'Sponsors'};
     return `<div class="complete-stats">${Object.entries(labels).map(([key, label]) => `<div><strong>${text(data.stats[key])}</strong><span>${label}</span></div>`).join('')}</div>`;

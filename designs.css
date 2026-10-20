@@ -38,27 +38,23 @@ button{color:inherit}
 .liquid-scroll{display:inline-flex;gap:15px;align-items:center;color:#868697;font-size:8px;letter-spacing:.17em;margin:12px auto}
 .liquid-scroll i{font-size:18px;font-style:normal;animation:nudge 2s ease-in-out infinite}
 @keyframes nudge{50%{transform:translateY(6px)}}
-.liquid-story{height:230svh;min-height:1450px;position:relative;--story-progress:0}
-.story-pin{position:sticky;top:var(--nav-height);height:calc(100svh - var(--nav-height));min-height:640px;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;isolation:isolate}
-.story-ambient{position:absolute;left:50%;top:60%;width:800px;height:350px;transform:translate(-50%,-50%) rotate(-10deg);background:radial-gradient(ellipse at 20% 50%,#bb318956,transparent 56%),radial-gradient(ellipse at 75% 55%,#174aff7a,transparent 55%);filter:blur(65px);z-index:-1;opacity:calc(.3 + var(--story-progress) * .7)}
+.liquid-story{padding:64px 0;position:relative}
+.story-pin{display:flex;flex-direction:column;align-items:center;gap:32px}
+.story-deck{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;width:min(1080px,92%)}
+.story-card{min-width:0;padding:30px;border:1px solid #ffffff28;border-radius:23px;background:#101522;display:flex;flex-direction:column;align-items:flex-start}
+.story-card a{margin-top:auto;padding-top:24px;min-height:44px}
+@media(max-width:760px){.liquid-story{padding:48px 0}.story-deck{grid-template-columns:1fr}.story-card{padding:25px}}
+
 .story-intro{text-align:center;position:relative;z-index:4}
 .story-intro h2{font-size:clamp(35px,4.5vw,61px);line-height:1.05;letter-spacing:-.05em;margin:20px 0 0;font-weight:600}
 .story-intro h2 span{color:#777785}
-.story-deck{height:375px;width:min(1080px,94vw);position:relative;margin-top:35px;perspective:1200px}
-.story-card{position:absolute;top:10px;left:calc(50% - 145px);width:290px;height:330px;border:1px solid #ffffff40;border-radius:31px;background:linear-gradient(135deg,#ffffff20,#ffffff07);backdrop-filter:blur(30px) saturate(1.9);-webkit-backdrop-filter:blur(30px) saturate(1.9);box-shadow:inset 0 1px 2px #ffffff52,0 25px 70px #0006;padding:30px;will-change:transform}
 .story-symbol{font-size:37px;line-height:1;margin-bottom:23px;color:#ddd1fc}
 .story-number{font-size:8px;color:#d0b8da;letter-spacing:.17em}
 .story-card h3{font-size:28px;font-weight:550;line-height:1.1;letter-spacing:-.035em;margin:11px 0 14px}
 .story-card p{font-size:12px;color:#c5c0d2;line-height:1.6}
 .story-card a{font-size:10px;display:inline-block;margin-top:19px;color:#efc7ff}
-.learn-card{z-index:1;transform:translateX(calc(-45px - 280px * var(--story-progress))) translateY(calc(8px + 4px * var(--story-progress))) rotate(calc(-13deg + 10deg * var(--story-progress)));background:linear-gradient(130deg,#bb589133,#ffffff08)}
-.build-card{z-index:3;transform:translateY(calc(-14px * var(--story-progress)));background:linear-gradient(130deg,#aa86dc40,#ffffff08)}
-.belong-card{z-index:2;transform:translateX(calc(45px + 280px * var(--story-progress))) translateY(calc(8px + 4px * var(--story-progress))) rotate(calc(13deg - 10deg * var(--story-progress)));background:linear-gradient(130deg,#448bed33,#ffffff08)}
 .belong-card .story-number{color:#abc4f9}
 .belong-card a{color:#b3d4ff}
-.story-progress{display:flex;gap:13px;align-items:center;font-size:7px;letter-spacing:.16em;color:#aaaaaf}
-.story-progress>div{height:1px;background:#ffffff1a;width:70px;overflow:hidden}
-.story-progress i{display:block;width:100%;height:1px;background:#d2b7ff;transform:scaleX(var(--story-progress));transform-origin:left}
 .liquid-impact{padding:110px 25px 100px;text-align:center;background:#f5f5f7;color:#16161c}
 .liquid-impact h2{font-size:clamp(40px,5vw,65px);line-height:1.07;letter-spacing:-.05em;font-weight:600;margin:23px auto 55px}
 .liquid-impact .liquid-kicker{color:#727281}
@@ -80,10 +76,7 @@ button{color:inherit}
 .liquid-hero{padding-top:55px}
 }
 @media(min-width:761px) and (max-width:1100px){
-.story-card{width:240px;left:calc(50% - 120px);padding:26px}
 .story-card h3{font-size:25px}
-.learn-card{transform:translateX(calc(-35px - 220px * var(--story-progress))) rotate(calc(-13deg + 10deg * var(--story-progress)))}
-.belong-card{transform:translateX(calc(35px + 220px * var(--story-progress))) rotate(calc(13deg - 10deg * var(--story-progress)))}
 }
 @media(max-width:760px){
 html{scroll-padding-top:calc(var(--nav-height) + 24px)}
@@ -99,23 +92,11 @@ html{scroll-padding-top:calc(var(--nav-height) + 24px)}
 .liquid-hero-copy>p:not(.liquid-kicker){font-size:14px}
 .liquid-button{font-size:11px;padding:12px 20px}
 .liquid-scroll{font-size:6px;letter-spacing:.12em}
-.liquid-story{height:220svh;min-height:1250px}
-.story-pin{min-height:590px}
 .story-intro{padding:0 20px}
 .story-intro h2{font-size:35px;line-height:1.05;margin-top:16px}
-.story-deck{width:100%;height:350px;margin-top:24px}
-.story-card{width:260px;height:305px;left:calc(50% - 130px);padding:25px;border-radius:25px}
 .story-card h3{font-size:27px}
 .story-symbol{margin-bottom:17px}
 .story-card a{margin-top:15px}
-.learn-card{transform:translateX(calc(-23px + 23px * var(--story-progress))) translateY(calc(3px - 25px * var(--story-progress))) rotate(calc(-10deg + 10deg * var(--story-progress)));z-index:1}
-.build-card{transform:translateY(calc(27px * var(--story-progress)));z-index:2}
-.belong-card{transform:translateX(calc(23px - 23px * var(--story-progress))) translateY(calc(3px + 78px * var(--story-progress))) rotate(calc(10deg - 10deg * var(--story-progress)));z-index:3}
-.story-deck{height:410px}
-.story-card:not(.mobile-active){pointer-events:none}
-.story-card.mobile-active{z-index:5}
-.story-progress{gap:9px;font-size:6px}
-.story-progress>div{width:38px}
 .liquid-impact{padding:75px 20px}
 .liquid-impact h2{font-size:38px;margin-bottom:36px}
 .impact-numbers{gap:45px}
@@ -131,11 +112,6 @@ html{scroll-padding-top:calc(var(--nav-height) + 24px)}
 @media(prefers-reduced-motion:reduce){
 html{scroll-behavior:auto}
 *,*:before,*:after{animation:none!important;transition:none!important}
-.liquid-story{height:auto;min-height:0}
-.story-pin{position:relative;top:auto;height:auto;min-height:0;padding:80px 20px}
-.story-deck{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;height:auto;margin-bottom:35px}
-.story-card{position:relative;inset:auto;transform:none!important;will-change:auto;pointer-events:auto!important}
-.story-progress{display:none}
 }
 .liquid-nav{max-width:none;margin:0;padding:18px clamp(20px,4vw,72px);border-radius:0;border-width:0 0 1px}
 .liquid-hero{padding-inline:0;background:radial-gradient(ellipse at 50% 46%,#23214745,transparent 58%)}
@@ -1077,3 +1053,20 @@ body{background:#060a15}
 [data-expanded-copy=true] .liquid-hero-copy{top:calc(-1 * var(--identity-space) + 16px);left:4%;width:92%;overflow-wrap:anywhere}
 [data-expanded-copy=true] .liquid-hero-copy .liquid-kicker{white-space:normal}
 @media(max-width:767px){.landmark-info-slot{min-height:240px}.landmark-information{min-height:190px}}
+
+/* Readable content and direct actions; the registered city artwork stays intact. */
+.impact-date{font-size:.8125rem;color:#666674}
+.liquid-world .community-heading>p,.event-copy p,.community-program>p,.community-member p,.sponsor-intro,.community-contact p,.app-description>p:not(.community-eyebrow),.app-feature>p,.story-card p,.liquid-join>p:not(.liquid-kicker){font-size:1rem;line-height:1.7}
+.community-eyebrow,.app-description>.community-eyebrow,.liquid-kicker,.story-number,.landmark-information .landmark-eyebrow{font-size:.75rem;letter-spacing:.1em;line-height:1.6}
+.content-footnote,.event-meta,.event-meta>span:last-child,.event-place,.event-action,.community-program>div,.community-member>div>span,.complete-stats span,.community-connect-link p,.community-contact>span,.app-downloads,.app-downloads>a:last-child,.app-feature-intro>span,.impact-numbers span,.liquid-footer,.preview-note,.preview-note>p,.story-card a{font-size:.8125rem}
+.story-card a,.story-number,.belong-card a,.belong-card .story-number{color:#c5d4f4}
+.team-directory>summary,.liquid-secondary,.liquid-button{font-size:.875rem}
+.feature-gallery-heading button{width:44px;height:44px}
+.liquid-footer>div,.preview-note>div{flex-wrap:wrap}
+.liquid-hero-copy .city-hero-subtitle{display:block;font-size:1rem;line-height:1.5;max-width:32ch;margin-inline:auto}
+.liquid-hero .liquid-hero-copy .liquid-button{display:inline-flex;min-height:44px;font-size:.875rem;margin-top:16px;background:#dfe7ff;color:#15203b}
+.cityscape-caption{font-size:.8125rem}.cityscape-caption>span{font-size:.75rem}
+.cityscape-rest-note>span{font-size:.75rem}
+.landmark-information [data-landmark-story]{font-size:1rem}
+@media(max-width:767px){.landmark-information{min-height:0}.landmark-info-slot{min-height:240px}.cityscape-rest-note{margin-top:20px}.liquid-hero h1{font-size:clamp(36px,8.7vw,62px)}}
+@media(prefers-reduced-transparency:reduce){.liquid-nav{background:#080e20;backdrop-filter:none;-webkit-backdrop-filter:none}.landmark-information{background:#152039;backdrop-filter:none;-webkit-backdrop-filter:none}}

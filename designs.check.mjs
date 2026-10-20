@@ -95,21 +95,13 @@ visit('?design=glass');
 context.syncLiquidLocation();
 assert.equal(location.hash, '');
 
-assert.equal(context.scrollProgress(1000, 1800, 900, 64), 0);
-assert.equal(context.scrollProgress(64, 1800, 900, 64), 0);
-assert.equal(context.scrollProgress(-418, 1800, 900, 64), .5);
-assert.equal(context.scrollProgress(-900, 1800, 900, 64), 1);
-assert.equal(context.scrollProgress(-2000, 1800, 900, 64), 1);
-assert.equal(context.scrollProgress(0, 200, 900, 64), 0);
 story.rect = {top: -414, height: 1800, bottom: 1386};
 cityScene.rect = {top: -1000, height: 600, bottom: -400};
 context.innerWidth = 390;
 context.updateMotion();
 assert.equal(cityScene.style.values['--city-drift'], '12.00px', 'Atmosphere drift stays within 12px');
 assert.equal(root.style.values['--nav-height'], '72px');
-assert.equal(story.style.values['--story-progress'], '0.5000');
-assert.equal(storyCards.filter(card => !card.inert).length, 1);
-assert.equal(storyCards[1].classList.values['mobile-active'], true);
+assert.ok(storyCards.every(card => !card.inert), 'Every story link remains keyboard-accessible on phones without scrolling');
 navigation.offsetHeight = 88;
 motionPreference.matches = true;
 motionPreference.events.change();
@@ -131,6 +123,7 @@ assert.equal((containers.events[0].innerHTML.match(/class="event-entry"/g) || []
 assert.ok(containers.contact[0].innerHTML.includes('helloswiftahmedabad@gmail.com'));
 assert.ok(containers.connect[0].innerHTML.includes('discord.gg'));
 assert.ok(containers.sponsors[0].innerHTML.includes('Space-O Technologies'));
+assert.ok(!containers.sponsors[0].innerHTML.includes('host-number'), 'Sponsors need names, not serial numbers');
 assert.equal((containers.programs[0].innerHTML.match(/class="community-program"/g) || []).length, source('programs').programs.length);
 assert.equal(statNodes[1].textContent, source('stats').stats.totalParticipants);
 assert.ok(yearNodes.every(node => node.textContent === source('stats').year));
@@ -176,6 +169,8 @@ const activeHTML = readFileSync(new URL('./designs.html', import.meta.url), 'utf
 assert.deepEqual([...activeHTML.matchAll(/id="world-([^"]+)"/g)].map(match => match[1]), ['glass']);
 assert.ok(!/data-choice|class="comparison"|id="studio-fill"/.test(activeHTML));
 assert.ok(!/assets\/designs\/(?:studio|city-of-swift|aurora)/.test(activeHTML));
+assert.ok(activeHTML.indexOf('id="glass-events"') < activeHTML.indexOf('id="liquid-story"'), 'Events precede optional storytelling');
+assert.match(activeHTML, /class="liquid-button" href="https:\/\/lu.ma\/user\/swiftahmedabad"[^>]*data-link="luma">Find your next meetup/, 'Hero CTA goes directly to the calendar');
 console.log('PASS: single-theme DOM, legacy URLs, nav offsets, lower story, reduced motion, real content, safe URLs, escaped text, retries, gallery and project subpaths');
 
 /* RETIRED THEMES: comparison, City of Swift dock/reveals and keyboard room tests.

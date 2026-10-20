@@ -69,8 +69,7 @@ export function initCityscape(scene) {
     panel.style.left = `${position.left - rect.left}px`;
     panel.style.top = `${position.top - rect.top}px`;
   }
-  // Text-only zoom can enlarge the heading without changing the viewport breakpoint.
-  // Keep the fixed artwork coordinate system; give oversized copy its own space above it.
+  // Give phones and enlarged text their own space above the fixed artwork.
   const stage = scene.querySelector('.cityscape-stage');
   const identity = scene.querySelector('.liquid-hero-copy');
   function fitIdentity() {
@@ -78,7 +77,7 @@ export function initCityscape(scene) {
     const stageRect = stage.getBoundingClientRect();
     const textWidth = identity.querySelector('h1 span').getBoundingClientRect().width;
     const space = identity.offsetHeight;
-    const expanded = textWidth > stageRect.width * (portrait.matches ? .58 : .36) + 2 || space > stageRect.height * .42;
+    const expanded = portrait.matches || textWidth > stageRect.width * .36 + 2 || space > stageRect.height * .42;
     scene.dataset.expandedCopy = String(expanded);
     scene.style.setProperty('--identity-space', `${expanded ? space + 32 : 0}px`);
     schedulePosition();
