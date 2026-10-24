@@ -147,18 +147,19 @@ The February 2025 listing links to [the original event](https://luma.com/ghp1rm2
 
 ## Content maintenance
 
-All three designs use the same local content sources:
+The active Liquid Night page uses these local content sources:
 
 - `links.json`: community identity, descriptions, email, and nine social/community destinations.
 - `stats.json`: the year and all seven community statistics.
 - `programs.json`: program names, descriptions, statuses, and destinations.
 - `team.json`: the complete team directory and LinkedIn profiles.
+- `speakers.json`: 30 Ahmedabad speaker profiles in a separate section, with pinned Talks source URLs. Names and two recovered YAML links follow the user's confirmations; biographies reflect event submissions. Source-verified portraits live in `assets/speakers/`, with `imageSource` and `imageSha` provenance in each photo record. Original bytes are preserved; photos load lazily and failed images reveal initials. Gokul remains initials-only. The user confirmed the Nishchal Visavadiya, Tushar Thakar and Riddhi Khunti filename-spelling mappings; 29 speakers have approved portraits. Future unclear identity mappings require confirmation before use.
 - `sponsors.json`: past hosts and the invitation to host.
 - `app.json`: app identity, App Store/TestFlight destinations, and all 14 feature screenshots.
 - `contact.json` and `sponsorship-email.json`: speaker submissions, email contacts, and the existing sponsorship email draft.
 - `events.json`: curated published event history, with direct source links. This is an editable archive, not a live Luma API feed. New events should be added here; the upcoming-event links always go to the community's Luma calendar.
 
-Update these files once to update all three designs. Serve the site over HTTP; the content files are fetched from the same origin. Verify with `node designs.check.mjs`.
+Shared files also feed the homepage, whose speaker and team tabs remain separate. Serve the site over HTTP; content files are fetched from the same origin. Verify with `node designs.check.mjs` and `node navigation.check.mjs`; inspect both pages after shared profile changes.
 
 ## Interactive Liquid Night cityscape
 

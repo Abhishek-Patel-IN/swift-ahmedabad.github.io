@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Swift Ahmedabad</title>
     <meta name="description" content="The official community for Swift developers in Ahmedabad. Join us for meetups, workshops, and networking.">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main.css?v=speaker-photos-1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,6 +19,7 @@
                     <img id="navbar-logo-img" src="" alt="Logo">
                 </button>
                 <div class="navbar-tabs">
+                    <a href="#speakers" class="tab-button" data-tab="speakers">Speakers</a>
                     <a href="#team" class="tab-button" data-tab="team">Team</a>
                     <a href="#app" class="tab-button" data-tab="app">Talks App</a>
                 </div>
@@ -111,6 +112,16 @@
                     <p class="footer-disclaimer">Apple, the Apple logo, Swift, and the Swift logo are trademarks of Apple Inc. Swift Ahmedabad is an independent, community-run group and is not affiliated with or endorsed by Apple Inc.</p>
                 </div>
             </footer>
+        </div>
+
+        <div id="speakers-tab" class="tab-content">
+            <header class="bento-item header">
+                <h1 class="gradient-text">Our Speakers</h1>
+                <p>Speakers from published Ahmedabad events. Biographies reflect their event submissions in <a href="https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad" target="_blank" rel="noopener noreferrer">Talks</a>.</p>
+            </header>
+            <main class="team-grid" id="speakers-container" aria-label="Ahmedabad speakers">
+                <p role="status">Loading speaker profiles…</p>
+            </main>
         </div>
 
         <!-- Team Tab -->
@@ -212,8 +223,8 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
-    <script src="team.js"></script>
+    <script src="app.js?v=speakers-1"></script>
+    <script src="team.js?v=speaker-photos-1"></script>
     <script src="swift-talks.js"></script>
     <script src="contact.js"></script>
 </body>

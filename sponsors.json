@@ -1,5 +1,5 @@
 {
-  "subtitle": "6 companies have hosted us so far. Every meetup runs on someone's generosity — a room, a projector, chai and snacks.",
+  "subtitle": "Meet the hosts and sponsors who support our gatherings. Every meetup runs on someone's generosity — a room, a projector, chai and snacks.",
   "sponsors": [
     { "number": 1, "name": "Hyperlink Infosystem", "url": "https://www.hyperlinkinfosystem.com/" },
     { "number": 2, "name": "Simform", "url": "https://www.simform.com/" },
@@ -7,6 +7,10 @@
     { "number": 4, "name": "7Span", "url": "https://www.7span.com/" },
     { "number": 5, "name": "Canopas", "url": "https://www.canopas.com/" },
     { "number": 6, "name": "Space-O Technologies", "url": "https://www.spaceotechnologies.com/" },
-    { "number": 7, "name": "Your company?", "url": "mailto:helloswiftahmedabad@gmail.com?subject=Host%20Swift%20Ahmedabad%20at%20our%20company" }
+    { "number": 7, "name": "Pixster Studio", "url": "https://www.pixsterstudio.com" },
+    { "number": 8, "name": "Tuvoc Technologies Private Limited", "url": "https://www.tuvoc.com" },
+    { "number": 9, "name": "LJ University", "url": "https://ljku.edu.in" },
+    { "number": 10, "name": "Aubergine Solutions Pvt. Ltd", "url": "https://www.aubergine.co" },
+    { "number": 11, "name": "Your company?", "url": "mailto:helloswiftahmedabad@gmail.com?subject=Host%20Swift%20Ahmedabad%20at%20our%20company" }
   ]
 }

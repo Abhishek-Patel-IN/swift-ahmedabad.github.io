@@ -184,13 +184,18 @@ function contentHTML(type, data, theme) {
   const text = escapeHTML;
   if (type === 'events') return `<div class="event-list">${data.events.map((event, index) => contentLink(event.url, `
     <div class="event-art">${event.image ? `<img src="${text(safeURL(event.image))}" alt="${text(event.title)} event poster" loading="lazy" width="800" height="800">` : `<span class="event-date-art">${text(event.period)}<svg aria-hidden="true"><use href="#bird"/></svg></span>`}</div>
-    <div class="event-copy"><div class="event-meta"><span>${text(event.period)}</span><span>${text(event.status)}</span></div><h3>${text(event.title)}</h3><p>${text(event.description)}</p><div class="event-place">${text(event.venue)}</div><span class="event-action">View event on Luma <b aria-hidden="true">↗</b></span></div>`, 'event-entry')).join('')}</div><p class="content-footnote">${text(data.subtitle)}</p>`;
+    <div class="event-copy"><div class="event-meta"><span>${text(event.period)}</span><span>${text(event.status)}</span></div><h3>${text(event.title)}</h3><p>${text(event.description)}</p><div class="event-place">${text(event.venue)}</div><span class="event-action">View event details <b aria-hidden="true">↗</b></span></div>`, 'event-entry')).join('')}</div><p class="content-footnote">${text(data.subtitle)}</p>`;
   if (type === 'programs') {
     return `<div class="program-list">${data.programs.map((program, index) => contentLink(program.url, `<span class="program-index">0${index + 1} <span aria-hidden="true">${text(program.emoji)}</span></span><h3>${text(program.name)}</h3><p>${text(program.description)}</p><div><span>${text(program.stat)}</span><b aria-hidden="true">↗</b></div>`, 'community-program')).join('')}</div>`;
   }
-  if (type === 'team') {
-    const memberHTML = member => contentLink(member.linkedIn, `<span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}</span><div><h3>${text(member.name)}</h3><p>${text(member.about)}</p><span>Connect on LinkedIn ↗</span></div>`, 'community-member');
-    return `<div class="member-grid">${data.members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${data.members.length} team members <span aria-hidden="true">+</span></summary><div class="member-grid">${data.members.slice(4).map(memberHTML).join('')}</div></details>`;
+  if (type === 'team' || type === 'speakers') {
+    const members = type === 'speakers' ? data.speakers : data.members;
+    const label = type === 'speakers' ? 'speakers' : 'team members';
+    const memberHTML = member => {
+      if (member.image && !/^assets\/speakers\/[\w.-]+\.(?:jpe?g|png)$/.test(member.image)) throw new Error('Unsupported profile image');
+      return contentLink(member.linkedIn, `<span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span><div><h3>${text(member.name)}</h3><p>${text(member.about)}</p><span>Connect on LinkedIn ↗</span></div>`, 'community-member');
+    };
+    return `<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map(memberHTML).join('')}</div></details>`;
   }
   if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => contentLink(sponsor.url, `<strong>${text(sponsor.name)}</strong><span aria-hidden="true">↗</span>`, 'community-host')).join('')}</div>`;
   if (type === 'stats') {
@@ -210,7 +215,7 @@ async function loadCommunityContent() {
   status.querySelector('span').textContent = 'Loading community content…';
   retry.hidden = true;
   let sponsorshipEmail;
-  const files = ['links', 'stats', 'programs', 'team', 'sponsors', 'app', 'contact', 'events', 'sponsorship-email'];
+  const files = ['links', 'stats', 'programs', 'team', 'speakers', 'sponsors', 'app', 'contact', 'events', 'sponsorship-email'];
   const results = await Promise.allSettled(files.map(async type => {
     const response = await fetch(`${type}.json`);
     if (!response.ok) throw new Error(`Could not load ${type}`);
@@ -254,6 +259,7 @@ async function loadCommunityContent() {
   scheduleMotion();
 }
 document.getElementById('retry-content').addEventListener('click', loadCommunityContent);
+document.addEventListener('error', event => { if (event.target?.matches?.('.profile-photo')) event.target.remove(); }, true);
 document.addEventListener('click', event => {
   const menuLink = event.target.closest('.section-menu a');
   if (menuLink) menuLink.closest('details').open = false;

@@ -13,7 +13,7 @@ function element(dataset = {}) {
   };
 }
 // Deliberately omit retired worlds, chooser, comparison header, dock, tabs and slab.
-const ids = Object.fromEntries(['design-note', 'retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
+const ids = Object.fromEntries(['design-note', 'retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'speakers', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
 const story = element();
 const cityScene = element();
 const storyCards = Array.from({length: 3}, () => element());
@@ -21,7 +21,7 @@ const navigation = {offsetHeight: 72};
 const status = element();
 const statusText = element();
 status.querySelector = () => statusText;
-const contentTypes = ['events', 'programs', 'team', 'sponsors', 'stats', 'connect', 'contact', 'app'];
+const contentTypes = ['events', 'programs', 'team', 'speakers', 'sponsors', 'stats', 'connect', 'contact', 'app'];
 const containers = Object.fromEntries(contentTypes.map(type => [type, [{
   dataset: {}, closest: () => ({id: 'world-glass'}), innerHTML: ''
 }]]));
@@ -73,7 +73,7 @@ for (const [hash, expected] of [
   ['aurora-programs', 'glass-programs'], ['aurora-sponsors', 'glass-sponsors'], ['editorial-contact', 'glass-contact'],
   ['aurora-connect', 'glass-connect'], ['mag-gatherings', 'glass-programs'], ['aurora-city', 'liquid-city'],
   ['lounge-top', 'liquid-top'], ['lounge-room', 'liquid-top'], ['mag-top', 'liquid-top'],
-  ['glass-team', 'glass-team'], ['liquid-story', 'liquid-story'], ['main', 'main'], ['glass-features', 'glass-features'],
+  ['glass-team', 'glass-team'], ['glass-speakers', 'glass-speakers'], ['liquid-story', 'liquid-story'], ['main', 'main'], ['glass-features', 'glass-features'],
   ['%E0%A4%A', 'liquid-top']
 ]) {
   visit(`?design=aurora&preview=6#${hash}`);
@@ -118,6 +118,14 @@ await context.loadCommunityContent();
 assert.equal(root.dataset.contentReady, 'ready');
 assert.equal(status.hidden, true);
 assert.equal((containers.team[0].innerHTML.match(/class="community-member"/g) || []).length, source('team').members.length);
+assert.equal((containers.speakers[0].innerHTML.match(/class="community-member"/g) || []).length, source('speakers').speakers.length);
+assert.equal((containers.speakers[0].innerHTML.match(/class="profile-photo"/g) || []).length, source('speakers').speakers.filter(speaker => speaker.image).length);
+assert.ok(!containers.team[0].innerHTML.includes('profile-photo'), 'Team cards keep their initials');
+const gokulHTML = context.contentHTML('speakers', {speakers: [source('speakers').speakers.find(speaker => speaker.name === 'Gokul Nair')]}, 'glass');
+assert.ok(gokulHTML.includes('GN</span>') && !gokulHTML.includes('profile-photo'), 'Gokul remains initials-only');
+assert.ok(containers.speakers[0].innerHTML.includes('Meet all 30 speakers'));
+assert.ok(containers.team[0].innerHTML.includes('Meet all 20 team members'));
+assert.ok(containers.speakers[0].innerHTML.includes('Dharmesh Avaiya') && !containers.team[0].innerHTML.includes('Dharmesh Avaiya'));
 assert.equal((containers.app[0].innerHTML.match(/class="app-feature"/g) || []).length, source('app').features.length);
 assert.equal((containers.events[0].innerHTML.match(/class="event-entry"/g) || []).length, source('events').events.length);
 assert.ok(containers.contact[0].innerHTML.includes('helloswiftahmedabad@gmail.com'));
@@ -137,6 +145,16 @@ const maliciousTeam = {members:[{name:'<script>alert(1)</script>', about:'<img o
 const rendered = context.contentHTML('team', maliciousTeam, 'glass');
 assert.ok(!rendered.includes('<script>') && !rendered.includes('<img onerror'));
 assert.ok(rendered.includes('&lt;script&gt;'));
+const renderedSpeaker = context.contentHTML('speakers', {speakers: maliciousTeam.members}, 'glass');
+assert.ok(renderedSpeaker.includes('&lt;script&gt;') && !renderedSpeaker.includes('<img onerror'));
+assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], linkedIn: 'javascript:alert(1)'}]}, 'glass'));
+for (const image of ['https://example.com/photo.png', 'data:image/png,test', 'assets/speakers/../photo.png', 'assets/speakers/photo.svg', 'assets/speakers/photo.png" onerror="alert(1)']) assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image}]}, 'glass'));
+const photoHTML = context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image: 'assets/speakers/RatneshJain.png'}]}, 'glass');
+assert.ok(photoHTML.includes('loading="lazy"') && photoHTML.includes('alt=""') && photoHTML.includes('&lt;script&gt;'));
+let failedPhotoRemoved = false;
+documentEvents.error({target: {matches: selector => selector === '.profile-photo', remove() { failedPhotoRemoved = true; }}});
+assert.equal(failedPhotoRemoved, true, 'A failed portrait reveals its initials');
+documentEvents.error({target: {}});
 failedRequest = 'team.json';
 await context.loadCommunityContent();
 assert.equal(root.dataset.contentReady, 'partial');
@@ -147,6 +165,16 @@ failedRequest = '';
 await ids['retry-content'].events.click();
 assert.equal(root.dataset.contentReady, 'ready');
 assert.equal(status.hidden, true);
+
+failedRequest = 'speakers.json';
+await context.loadCommunityContent();
+assert.equal(root.dataset.contentReady, 'partial');
+assert.equal(ids['retry-content'].hidden, false);
+assert.ok(containers.team[0].innerHTML.includes('Kajal Seth'));
+failedRequest = '';
+await ids['retry-content'].events.click();
+assert.equal(root.dataset.contentReady, 'ready');
+assert.equal((containers.speakers[0].innerHTML.match(/class="community-member"/g) || []).length, 30);
 
 const gallery = element();
 gallery.clientWidth = 390;

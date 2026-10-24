@@ -1,5 +1,5 @@
 {
-  "subtitle": "A few of our published gatherings. Browse Luma for the complete calendar and new announcements.",
+  "subtitle": "Published gatherings from Swift Ahmedabad’s Talks archive and Luma listings. Browse Luma for new announcements.",
   "events": [
     {
       "title": "Swift Ahmedabad WWDC26 Watch Party",
@@ -11,21 +11,85 @@
       "image": "assets/designs/wwdc-2026.jpg"
     },
     {
+      "title": "Swift Ahmedabad March’26 Meetup",
+      "period": "14 March 2026",
+      "status": "Past event",
+      "venue": "Aubergine Solutions Pvt. Ltd.",
+      "description": "Talks explored AI in iOS apps, Figma Code Connect, and reliable connected-device apps with Swift and BLE.",
+      "url": "https://luma.com/wyi4h6xl"
+    },
+    {
+      "title": "Swift Ahmedabad December’25 Meetup",
+      "period": "13 December 2025",
+      "status": "Past event",
+      "venue": "LJ University",
+      "description": "Sessions covered Instruments and performance tuning, Vapor, Foundation Models, accessibility, and a showcase from LJ University.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/9.%20Dec%2013%2C%202025"
+    },
+    {
+      "title": "Swift Ahmedabad October’25 Meetup",
+      "period": "11 October 2025",
+      "status": "Past event",
+      "venue": "CricHeroes Pvt. Ltd",
+      "description": "The community shared experiences from Swift Bharat, approaches to code quality, and lessons on building connections.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/8.%20Oct%2011%2C%202025"
+    },
+    {
       "title": "Swift Ahmedabad July’25 Meetup",
-      "period": "July 2025",
+      "period": "19 July 2025",
       "status": "Past event",
       "venue": "Tuvoc Technologies",
-      "description": "IndeHub Hackathon City Demo Day, with live demos of projects built using WWDC25 technologies.",
+      "description": "A session on Xcode 26 and ChatGPT, followed by IndeHub project demos.",
       "url": "https://luma.com/fu6yaqfs",
       "image": "assets/designs/july-2025-meetup.jpg"
     },
     {
+      "title": "Swift Ahmedabad WWDC25 Watch Party",
+      "period": "9 June 2025",
+      "status": "Past event",
+      "venue": "7 Span",
+      "description": "The WWDC25 gathering included “Introduction to Keynote” and “Lessons from Launching My First App Linnk”.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/6.%20Jun%209%2C%202025"
+    },
+    {
+      "title": "Swift Ahmedabad April’25 Meetup",
+      "period": "5 April 2025",
+      "status": "Past event",
+      "venue": "Pixster Studio",
+      "description": "Talks explored physics in AR, design patterns, and SOLID principles, with time for networking.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/5.%20Apr%205%2C%202025"
+    },
+    {
       "title": "Swift Ahmedabad February’25 Meetup",
-      "period": "February 2025",
+      "period": "15 February 2025",
       "status": "Past event",
       "venue": "Ahmedabad Management Association",
-      "description": "An iOS development gathering with talks, a keynote session, and discussions between local developers.",
+      "description": "Talks covered Swift Testing, code signing and reverse engineering, Image Playground, modular apps, and the vocabulary of TCA.",
       "url": "https://luma.com/ghp1rm2g"
+    },
+    {
+      "title": "Swift Ahmedabad December’24 Meetup",
+      "period": "21 December 2024",
+      "status": "Past event",
+      "venue": "Hyperlink InfoSystem",
+      "description": "Sessions explored SwiftData, indie development, iOS 18 Control Widgets, and dependency injection with Live Activities.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/3.%20Dec%2021%2C%202024"
+    },
+    {
+      "title": "Swift Ahmedabad October’24 Meetup",
+      "period": "19 October 2024",
+      "status": "Past event",
+      "venue": "Simform",
+      "description": "Talks covered Mesh, a plug-and-play UI framework, modern concurrency, and Apple Intelligence.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/2.%20Oct%2019%2C%202024"
+    },
+    {
+      "title": "Swift Ahmedabad August’24 Meetup",
+      "period": "10 August 2024",
+      "status": "Past event",
+      "venue": "MobileFirst Applications - Fintegration",
+      "description": "Sessions included “Let’s Scroll” and “Revolutionizing iOS Development”.",
+      "url": "https://github.com/Swift-Ahmedabad/Talks/tree/617e9de2b07eacf132da829cbbb272cc8a44bc74/Swift-Ahmedabad/1.%20Aug%2010%2C%202024"
     }
   ]
 }
