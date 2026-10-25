@@ -7,7 +7,7 @@
 <meta name="description" content="Swift Ahmedabad: meetups, workshops, community events, our team, and the Talks app for Apple-platform developers.">
 <link rel="icon" href="assets/swiftAhmedabad.jpg">
 <link rel="stylesheet" href="designs.css?v=speaker-photos-1">
-<script src="designs.js?v=speaker-photos-1" defer></script>
+<script src="designs.js?v=verified-content-2" defer></script>
 <script type="module" src="cityscape.mjs?v=6"></script>
 </head>
 <body data-design="glass">
@@ -46,7 +46,18 @@
 <main id="main">
 <!-- Liquid Night: one registered city composition with eight independent reveals. -->
 <div class="world liquid-world" id="world-glass">
- <nav class="liquid-nav" aria-label="Liquid Night navigation"><a class="liquid-brand" href="#liquid-top"><svg aria-hidden="true"><use href="#bird"/></svg>Swift Ahmedabad</a><div><details class="section-menu"><summary>Explore <span aria-hidden="true">⌄</span></summary><div><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Our team</a><a href="#glass-app">Talks app</a><a href="#glass-sponsors">Hosts & sponsors</a><a href="#glass-connect">Connect</a><a href="#glass-contact">Contact</a></div></details><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Our people</a><a href="#glass-app">Talks app</a><a class="liquid-nav-join" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a></div></nav>
+ <nav class="liquid-nav" aria-label="Main navigation">
+  <div class="liquid-nav-inner">
+   <a class="liquid-brand" href="#liquid-top" aria-label="Swift Ahmedabad home"><svg aria-hidden="true"><use href="#bird"/></svg>Swift Ahmedabad</a>
+   <div class="liquid-nav-links">
+    <details class="section-menu">
+     <summary aria-label="Navigation menu"><span class="nav-menu-icon" aria-hidden="true"></span></summary>
+     <div><a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a href="#glass-sponsors">Hosts & sponsors</a><a href="#glass-connect">Connect</a><a href="#glass-contact">Contact</a><a href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a></div>
+    </details>
+    <a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a class="liquid-nav-join" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a>
+   </div>
+  </div>
+ </nav>
  <section class="liquid-hero" id="liquid-top">
   <section class="liquid-cityscape" id="liquid-city" data-cityscape aria-label="Explore Ahmedabad’s landmarks">
    <div class="cityscape-viewport"><div class="cityscape-stage">
@@ -87,11 +98,17 @@
  <section class="community-section community-events" id="glass-events"><div class="community-heading"><div><p class="community-eyebrow">FROM OUR COMMUNITY</p><h2>Good things we’ve shared.</h2></div><p>Published gatherings from Swift Ahmedabad. <a href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">See the complete calendar ↗</a></p></div><div data-content="events"><p class="loading-copy">Loading community content…</p></div></section>
 
  <section class="liquid-story" id="liquid-story" aria-label="Learn, build, belong">
-  <div class="story-pin"><div class="story-intro"><p class="liquid-kicker">SOMETHING HAPPENS WHEN WE COME TOGETHER.</p><h2>One connection.<br><span>So many possibilities.</span></h2></div>
+  <div class="story-pin"><div class="story-intro"><p class="liquid-kicker">SOMETHING HAPPENS WHEN WE COME TOGETHER.</p><div class="story-heading"><h2>One connection.<br><span>So many possibilities.</span></h2></div></div>
    <div class="story-deck">
-    <article class="story-card learn-card"><div class="story-symbol">↗</div><span class="story-number">LEARN</span><h3>A fresh<br>perspective.</h3><p>Real talks. Shared knowledge.<br>Your next lightbulb moment.</p><a href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Explore our meetups ↗</a></article>
-    <article class="story-card build-card"><div class="story-symbol">⌘</div><span class="story-number">BUILD</span><h3>Make something<br>that matters.</h3><p>Bring a side project.<br>Leave with new possibilities.</p><a href="https://github.com/swift-ahmedabad/" target="_blank" rel="noopener noreferrer" data-link="github">Explore our GitHub ↗</a></article>
-    <article class="story-card belong-card"><div class="story-symbol">✳</div><span class="story-number">BELONG</span><h3>Your people.<br>Your place.</h3><p>From your first line of Swift<br>to your next big idea.</p><a href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Meet the community ↗</a></article>
+    <article class="story-card learn-card" id="story-learn"><div class="story-symbol" aria-hidden="true">↗</div><span class="story-number">LEARN</span><h3>A fresh<br>perspective.</h3><p>Real talks. Shared knowledge.<br>Your next lightbulb moment.</p><a href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Explore our meetups ↗</a></article>
+    <article class="story-card build-card" id="story-build"><div class="story-symbol" aria-hidden="true">⌘</div><span class="story-number">BUILD</span><h3>Make something<br>that matters.</h3><p>Bring a side project.<br>Leave with new possibilities.</p><a href="https://github.com/swift-ahmedabad/" target="_blank" rel="noopener noreferrer" data-link="github">Explore our GitHub ↗</a></article>
+    <article class="story-card belong-card" id="story-belong"><div class="story-symbol" aria-hidden="true">✳</div><span class="story-number">BELONG</span><h3>Your people.<br>Your place.</h3><p>From your first line of Swift<br>to your next big idea.</p><a href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Meet the community ↗</a></article>
+   </div>
+   <div class="story-controls" role="group" aria-label="Story chapters">
+    <button type="button" data-story-step="0" aria-controls="story-learn" aria-pressed="true"><span>01</span> Learn</button>
+    <button type="button" data-story-step="1" aria-controls="story-build" aria-pressed="false"><span>02</span> Build</button>
+    <button type="button" data-story-step="2" aria-controls="story-belong" aria-pressed="false"><span>03</span> Belong</button>
+    <span class="story-scroll-hint">Scroll to explore <span aria-hidden="true">↓</span></span>
    </div>
   </div>
  </section>
@@ -99,9 +116,7 @@
 
 
  <section class="community-section community-programs" id="glass-programs"><div class="community-heading"><div><p class="community-eyebrow">WAYS TO GET INVOLVED</p><h2>Meet. Learn. Make something.</h2></div><p>Swift meetups, social gatherings, and student outreach.</p></div><div data-content="programs"><p class="loading-copy">Loading community content…</p></div></section>
- <section class="liquid-impact"><p class="liquid-kicker">SMALL BEGINNINGS. REAL IMPACT.</p><h2>A city of talent.<br>A world of possibility.</h2><div class="impact-numbers"><div><strong data-stat="totalEvents">6</strong><span>meetups</span></div><div><strong data-stat="totalParticipants">295</strong><span>participants</span></div><div><strong data-stat="totalSpeakers">16</strong><span>speakers</span></div></div><p class="impact-date">Our community, in <span data-year>2025</span>.</p></section>
 
- <div class="community-section community-year-stats" aria-label="Community statistics"><p class="community-eyebrow">OUR COMMUNITY IN <span data-year>2025</span></p><div data-content="stats"></div></div>
 
  <section class="community-section community-app" id="glass-app"><div data-content="app"><p class="loading-copy">Loading the Talks app…</p></div></section>
 

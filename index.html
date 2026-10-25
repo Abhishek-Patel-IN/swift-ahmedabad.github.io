@@ -12,19 +12,31 @@
 </head>
 <body>
     <!-- Sticky Navigation Bar -->
-    <nav class="navbar">
+    <nav class="navbar navbar-home" aria-label="Main navigation">
         <div class="navbar-content">
-            <div class="navbar-left">
-                <button class="navbar-logo" id="navbar-logo-btn" aria-label="Go to Community">
-                    <img id="navbar-logo-img" src="" alt="Logo">
-                </button>
-                <div class="navbar-tabs">
+            <button class="navbar-logo" id="navbar-logo-btn" aria-label="Swift Ahmedabad home">
+                <img id="navbar-logo-img" src="assets/swiftAhmedabad.jpg" alt="">
+                <span>Swift Ahmedabad</span>
+            </button>
+            <div class="navbar-right">
+                <div class="navbar-tabs navbar-desktop-links">
+                    <a href="#" class="tab-button active" data-tab="community" aria-current="page">Home</a>
                     <a href="#speakers" class="tab-button" data-tab="speakers">Speakers</a>
                     <a href="#team" class="tab-button" data-tab="team">Team</a>
                     <a href="#app" class="tab-button" data-tab="app">Talks App</a>
                 </div>
+                <button id="contact-btn" class="contact-button tab-button" data-tab="contact">Contact Us</button>
+                <details class="navbar-menu">
+                    <summary aria-label="Navigation menu"><span class="navbar-menu-icon" aria-hidden="true"></span></summary>
+                    <div>
+                        <a href="#" class="tab-button active" data-tab="community" aria-current="page">Home</a>
+                        <a href="#speakers" class="tab-button" data-tab="speakers">Speakers</a>
+                        <a href="#team" class="tab-button" data-tab="team">Team</a>
+                        <a href="#app" class="tab-button" data-tab="app">Talks App</a>
+                        <a href="#contact" class="tab-button" data-tab="contact">Contact Us</a>
+                    </div>
+                </details>
             </div>
-            <button id="contact-btn" class="contact-button">Contact Us</button>
         </div>
     </nav>
 
@@ -42,10 +54,6 @@
                     <a id="hero-cta-secondary" href="" class="cta-button cta-secondary" target="_blank">See Events on Luma</a>
                 </div>
             </header>
-
-            <div id="stats-container" class="stats-grid">
-                <!-- Stats will be dynamically loaded from stats.json -->
-            </div>
 
             <section class="programs-section">
                 <h2 class="section-title">What we do</h2>
@@ -223,7 +231,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=speakers-1"></script>
+    <script src="app.js?v=verified-content-2"></script>
     <script src="team.js?v=speaker-photos-1"></script>
     <script src="swift-talks.js"></script>
     <script src="contact.js"></script>

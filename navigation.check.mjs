@@ -18,17 +18,20 @@ function element(dataset = {}) {
 
 const tabs = ['community', 'team', 'speakers', 'app', 'support', 'contact'];
 const contents = Object.fromEntries(tabs.map(name => [`${name}-tab`, element()]));
-const buttons = ['community', 'team', 'speakers', 'app', 'contact'].map(tab => element({ tab }));
+const buttons = ['community', 'team', 'speakers', 'app', 'contact'].flatMap(tab => [element({ tab }), element({ tab })]);
 const peopleContainers = { 'team-container': { innerHTML: '' }, 'speakers-container': { innerHTML: '' } };
 const logo = element();
 const contact = element();
+const summary = element();
+const menu = { open: false, contains: node => node === summary, querySelector: () => summary };
+summary.closest = () => null;
 const documentEvents = {};
 const windowEvents = {};
 const document = {
     activeElement: null,
     addEventListener(name, callback) { documentEvents[name] = callback; },
     getElementById: id => contents[id] || peopleContainers[id] || { 'navbar-logo-btn': logo, 'contact-btn': contact }[id],
-    querySelector: selector => buttons.find(button => selector === `[data-tab="${button.dataset.tab}"]`),
+    querySelector: () => menu,
     querySelectorAll: selector => selector === '.tab-content' ? Object.values(contents) : selector === '.tab-button' ? buttons : buttons.filter(button => selector === `[data-tab="${button.dataset.tab}"]`)
 };
 const window = { location: { hash: '#team' }, addEventListener(name, callback) { windowEvents[name] = callback; } };
@@ -41,7 +44,8 @@ for (const [hash, expected] of [['#team', 'team'], ['#speakers', 'speakers'], ['
     windowEvents.hashchange();
     assert.deepEqual(Object.entries(contents).filter(([, node]) => node.classList.contains('active')).map(([id]) => id), [`${expected}-tab`]);
     for (const button of buttons) {
-        assert.equal(button.classList.contains('active'), button.dataset.tab === expected, 'Tab selection follows the URL');
+        assert.equal(button.classList.contains('active'), button.dataset.tab === expected, 'Desktop and mobile selection agree');
+        assert.equal(button.attributes['aria-current'], button.dataset.tab === expected ? 'page' : undefined);
     }
 }
 logo.events.click();
@@ -49,9 +53,25 @@ assert.equal(window.location.hash, '');
 contact.events.click();
 assert.equal(window.location.hash, 'contact');
 
+menu.open = true;
+documentEvents.click({ target: summary });
+assert.equal(menu.open, true, 'Menu stays open for inside interactions');
+documentEvents.keydown({ key: 'Tab' });
+assert.equal(menu.open, true);
+documentEvents.keydown({ key: 'Escape' });
+assert.equal(menu.open, false);
+assert.equal(document.activeElement, summary, 'Escape restores control focus');
+menu.open = true;
+documentEvents.click({ target: { closest: () => null } });
+assert.equal(menu.open, false, 'Outside clicks dismiss the menu');
+menu.open = true;
+documentEvents.click({ target: { closest: selector => selector === '.navbar-menu a' ? {} : null } });
+assert.equal(menu.open, false, 'Following a menu link dismisses the menu');
+
 const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+assert.ok(!html.includes('id="stats-container"'), 'The homepage omits disputed annual totals');
 const nav = html.match(/<nav[\s\S]*?<\/nav>/)[0];
-for (const [tab, hash] of [['speakers', 'speakers'], ['team', 'team'], ['app', 'app']]) {
+for (const [tab, hash] of [['community', ''], ['speakers', 'speakers'], ['team', 'team'], ['app', 'app'], ['contact', 'contact']]) {
     assert.ok(nav.includes(`href="#${hash}"`), `${tab} keeps native hash navigation`);
 }
 runInNewContext(readFileSync(new URL('./team.js', import.meta.url), 'utf8'), context);
@@ -101,4 +121,17 @@ assert.equal(peopleContainers['team-container'].innerHTML, teamHTML);
 failSpeakers = false;
 await context.loadSpeakers();
 assert.ok(peopleContainers['speakers-container'].innerHTML.includes('Dharmesh Avaiya'));
-console.log('PASS: homepage routing, speakers/team separation, source decisions, safe profile text/URLs, failed loads and tab routing');
+const contentNodes = Object.fromEntries(['community-name', 'community-description', 'community-logo', 'navbar-logo-img', 'hero-cta-primary', 'hero-cta-secondary', 'links-container', 'app-name', 'app-tagline', 'app-description', 'testflight-btn', 'app-icon'].map(id => [id, {}]));
+document.getElementById = id => contentNodes[id];
+const contentRequests = [];
+context.fetch = async path => {
+    contentRequests.push(path);
+    if (path === 'stats.json') throw new Error('Annual totals are unverified');
+    return { json: async () => JSON.parse(readFileSync(new URL(`./${path}`, import.meta.url), 'utf8')) };
+};
+await context.loadContent();
+assert.ok(!contentRequests.includes('stats.json'), 'Homepage content is independent of annual totals');
+assert.equal(contentNodes['community-name'].textContent, 'Swift Ahmedabad');
+assert.equal(contentNodes['app-name'].textContent, 'Talks');
+assert.ok(contentNodes['links-container'].innerHTML.includes('https://github.com/'));
+console.log('PASS: homepage routing, speakers/team separation, source decisions, safe profile text/URLs, failed loads, menus and keyboard focus');

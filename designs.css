@@ -24,7 +24,7 @@ button{color:inherit}
 .liquid-nav{max-width:1160px;margin:16px auto 0;padding:13px 23px;display:flex;align-items:center;justify-content:space-between;gap:25px;position:relative;z-index:4;border:1px solid #ffffff23;background:linear-gradient(115deg,#ffffff11,#ffffff04);border-radius:18px;box-shadow:inset 0 1px 0 #ffffff13,0 8px 24px #0004;backdrop-filter:blur(22px) saturate(1.8);-webkit-backdrop-filter:blur(22px) saturate(1.8)}
 .liquid-brand{display:flex;gap:9px;align-items:center;font-size:16px;letter-spacing:-.4px;font-weight:650}
 .liquid-brand svg{width:26px;height:26px;fill:#e4e4f0}
-.liquid-nav>div{display:flex;gap:26px;align-items:center;font-size:10px;color:#bbbbc6}
+.liquid-nav-links{display:flex;gap:26px;align-items:center;font-size:10px;color:#bbbbc6}
 .liquid-nav-join{background:#f5f5f7;color:#121217;padding:9px 18px;border-radius:20px;font-weight:650}
 .liquid-hero{position:relative;isolation:isolate;text-align:center;padding:60px 24px 28px;overflow:hidden}
 .liquid-hero-copy{position:relative;z-index:3}
@@ -83,8 +83,8 @@ html{scroll-padding-top:calc(var(--nav-height) + 24px)}
 .liquid-nav{margin:12px 15px 0;padding:12px 14px;border-radius:15px;gap:12px}
 .liquid-brand{font-size:12px;gap:7px}
 .liquid-brand svg{width:22px;height:22px}
-.liquid-nav>div{gap:0}
-.liquid-nav>div>a:not(.liquid-nav-join){display:none}
+.liquid-nav-links{gap:0}
+.liquid-nav-links>a:not(.liquid-nav-join){display:none}
 .liquid-nav-join{padding:9px 14px;font-size:9px}
 .liquid-hero{padding:48px 17px 25px}
 .liquid-kicker{font-size:7px;letter-spacing:.13em;line-height:1.6}
@@ -333,7 +333,7 @@ html{scroll-behavior:auto}
 .liquid-world .section-menu>div>a:hover{background:#ffffff12}
 @media(max-width:760px){
 .section-menu{display:block;font-size:9px}
-.liquid-nav>div{gap:13px}
+.liquid-nav-links{gap:13px}
 .section-menu>div{right:-55px}
 .liquid-nav .section-menu>div{right:-65px}
 }
@@ -941,9 +941,23 @@ END RETIRED THEME AND SCENE CSS */
    water 3, native hotspots 4, HTML identity 5, shared information 10. */
 body{background:#060a15}
 .liquid-world{overflow:visible;background:#060a15}
-.liquid-nav{position:sticky;top:0;z-index:40;max-width:none;width:100%;margin:0;padding:14px clamp(16px,4vw,64px);min-height:72px;border-radius:0;border-width:0 0 1px;background:#080e20d9}
-.liquid-brand{font-size:16px}.liquid-nav>div{font-size:12px;gap:26px}.liquid-nav-join{padding:12px 20px;background:#dfe7ff;color:#15203b}
-.liquid-nav .section-menu{font-size:12px}.liquid-nav .section-menu summary{padding-block:12px}
+.liquid-nav{position:sticky;top:0;z-index:40;display:block;max-width:none;width:100%;margin:0;padding:12px 16px 0;min-height:0;border:0;border-radius:0;background:transparent;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.liquid-nav-inner{max-width:1080px;min-height:54px;margin:auto;padding:4px 12px 4px 18px;display:flex;align-items:center;justify-content:space-between;gap:24px;border:1px solid #ffffff26;border-radius:20px;background:linear-gradient(115deg,#ffffff0a,#ffffff03),#080e20b8;box-shadow:inset 0 1px 0 #ffffff14,0 8px 24px #0003;backdrop-filter:blur(22px) saturate(1.4);-webkit-backdrop-filter:blur(22px) saturate(1.4)}
+.liquid-brand{font-size:18px;white-space:nowrap}.liquid-nav-links{font-size:14px;gap:2px}
+.liquid-nav-links>a{display:inline-flex;align-items:center;min-height:44px;padding:8px 12px;border-radius:8px}
+.liquid-nav-links>a:hover{color:#fff;background:#ffffff0a}
+.liquid-nav-join{background:none;color:inherit;font-weight:400}
+.liquid-nav .section-menu{font-size:14px}
+.liquid-nav .section-menu summary{width:44px;height:44px;justify-content:center;border-radius:10px}
+.liquid-nav .section-menu summary:hover{background:#ffffff0a}
+.nav-menu-icon,.nav-menu-icon:before,.nav-menu-icon:after{display:block;width:18px;height:2px;background:currentColor;border-radius:2px}
+.nav-menu-icon{position:relative;background:transparent}
+.nav-menu-icon:before,.nav-menu-icon:after{content:"";position:absolute;left:0;top:-4px}
+.nav-menu-icon:after{top:4px}
+.section-menu[open] .nav-menu-icon:before{top:0;transform:rotate(45deg)}
+.section-menu[open] .nav-menu-icon:after{top:0;transform:rotate(-45deg)}
+.liquid-nav .section-menu>div{top:calc(100% + 10px);right:0;min-width:230px;max-width:calc(100vw - 64px);max-height:calc(100dvh - 92px);overflow-y:auto;background:#0d1426f5;border-color:#ffffff26;border-radius:16px}
+.liquid-nav .section-menu>div>a{min-height:44px;border-radius:8px}
 .liquid-hero{padding:0;text-align:center;overflow:visible;background:#060a15}
 .liquid-cityscape{position:relative;isolation:isolate;width:100%}
 .cityscape-viewport{width:100%;overflow:hidden;background:#050d21}
@@ -980,13 +994,13 @@ body{background:#060a15}
 @media(min-width:1600px){.liquid-hero-copy{top:5.3%}.liquid-hero h1{font-size:clamp(86px,5.2vw,110px)}}
 @media(min-width:768px) and (max-width:1023px){.liquid-hero-copy{top:3%;left:32%;width:36%}.city-community-mark{width:30px;height:30px;margin-bottom:7px}.liquid-hero h1{font-size:42px;margin:10px 0}.liquid-hero-copy .city-hero-subtitle{font-size:12px}.liquid-hero .liquid-button{font-size:10px;padding:10px 13px;margin-top:12px}.liquid-hero-copy .liquid-kicker{font-size:6px}}
 @media(max-width:767px){
- .liquid-nav{min-height:66px;padding:10px 16px;gap:12px}.liquid-brand{font-size:13px;gap:6px}.liquid-brand svg{width:24px;height:24px}.liquid-nav>div{gap:12px}.liquid-nav>div>a:not(.liquid-nav-join){display:none}.liquid-nav-join{font-size:11px;padding:12px 14px;min-height:44px;display:flex;align-items:center}.liquid-nav .section-menu{font-size:11px}.liquid-nav .section-menu>div{right:-80px}
+ .liquid-nav{padding:10px 12px 0}.liquid-nav-inner{padding:4px 6px 4px 14px;gap:12px;border-radius:18px}.liquid-brand{font-size:15px;gap:8px}.liquid-brand svg{width:26px;height:26px}.liquid-nav-links{gap:0}.liquid-nav-links>a{display:none}.liquid-nav .section-menu{display:block}
  .cityscape-stage{aspect-ratio:3/4}.liquid-hero-copy{top:3.3%;left:21%;width:58%}.city-community-mark{width:30px;height:30px;margin-bottom:7px}.liquid-hero-copy .liquid-kicker{font-size:6px;letter-spacing:.12em}.liquid-hero h1{font-size:clamp(34px,8.7vw,62px);margin:9px 0 9px;line-height:1}.liquid-hero-copy .city-hero-subtitle{font-size:11px;line-height:1.45}.liquid-hero-copy .city-hero-subtitle br{display:none}.liquid-hero .liquid-button{font-size:10px;min-height:44px;margin-top:11px;padding:10px 14px;gap:9px}
  .cityscape-caption{display:block;text-align:center;padding:18px 20px 0;font-size:11px}.cityscape-caption>span{display:none}.cityscape-caption>p{max-width:320px;margin:auto}
  .landmark-info-slot{min-height:218px;padding:18px 20px 24px}.landmark-information{width:100%;min-height:172px;padding:22px 42px 22px 20px;border-radius:14px}.landmark-information h2{font-size:20px}.landmark-information [data-landmark-story]{font-size:13px}.landmark-information .landmark-eyebrow{font-size:8px}[data-landmark-close]{width:44px;height:44px;top:1px;right:1px}
  .city-community-intro{margin:0;padding:8px 24px 35px}.city-community-intro>p{font-size:14px}.city-community-intro .liquid-scroll{margin-top:24px}.cityscape-sheen{clip-path:polygon(48% 90%,100% 78%,100% 100%,48% 100%)}
 }
-@media(max-width:359px){.liquid-brand{font-size:11px}.liquid-nav>div{gap:8px}.liquid-nav-join{padding-inline:11px}.liquid-nav .section-menu{font-size:10px}.liquid-hero-copy{top:2.5%}.city-community-mark{width:25px;height:25px;margin-bottom:5px}.liquid-hero-copy .liquid-kicker{font-size:5px}.liquid-hero h1{font-size:30px;margin:8px 0}.liquid-hero-copy .city-hero-subtitle{font-size:10px}.liquid-hero .liquid-button{font-size:9px;margin-top:7px;min-height:40px}}
+@media(max-width:359px){.liquid-brand{font-size:14px}.liquid-hero-copy{top:2.5%}.city-community-mark{width:25px;height:25px;margin-bottom:5px}.liquid-hero-copy .liquid-kicker{font-size:5px}.liquid-hero h1{font-size:30px;margin:8px 0}.liquid-hero-copy .city-hero-subtitle{font-size:10px}.liquid-hero .liquid-button{font-size:9px;margin-top:7px;min-height:40px}}
 @media(prefers-reduced-motion:reduce){.city-piece{transition:none}.cityscape-atmosphere{transform:none}.cityscape-sheen{background-position:50% 0}}
 @media(forced-colors:active){.city-target{outline:1px solid ButtonText}.city-hotspot{clip-path:none;background:transparent}.landmark-information{border:2px solid CanvasText;background:Canvas;color:CanvasText}}
 
@@ -1070,4 +1084,60 @@ body{background:#060a15}
 .cityscape-rest-note>span{font-size:.75rem}
 .landmark-information [data-landmark-story]{font-size:1rem}
 @media(max-width:767px){.landmark-information{min-height:0}.landmark-info-slot{min-height:240px}.cityscape-rest-note{margin-top:20px}.liquid-hero h1{font-size:clamp(36px,8.7vw,62px)}}
-@media(prefers-reduced-transparency:reduce){.liquid-nav{background:#080e20;backdrop-filter:none;-webkit-backdrop-filter:none}.landmark-information{background:#152039;backdrop-filter:none;-webkit-backdrop-filter:none}}
+@media(prefers-reduced-transparency:reduce){.liquid-nav-inner{background:#080e20;backdrop-filter:none;-webkit-backdrop-filter:none}.landmark-information{background:#152039;backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+/* Keep the story headline's spacing consistent in pinned and ordinary flow. */
+.story-intro{width:min(760px,100%)}
+.story-heading{min-height:280px;display:grid;align-items:center;margin-top:20px}
+.story-intro .story-heading h2{margin:0}
+@media(max-width:767px){.story-heading{min-height:210px;margin-top:16px}}
+
+/* Native scroll reveals. Unsupported browsers keep the ordinary, visible layout.
+   Keep the story headline and registered city layers out of transforms. */
+@keyframes liquid-scroll-reveal{
+ from{opacity:.55;transform:translateY(var(--reveal-rise,36px))}
+ to{opacity:1;transform:none}
+}
+@supports (animation-timeline:view()) and (animation-range:entry 0% cover 32%){
+ @media screen and (prefers-reduced-motion:no-preference) and (forced-colors:none){
+  /* Keyboard and anchor navigation should land on fully legible content. */
+  #world-glass :is(.community-heading,.liquid-impact>h2,.impact-numbers>div,.app-overview,.liquid-join>h2):where(:not(:focus-within):not(:target):not(:target *)){
+   animation:liquid-scroll-reveal linear both;
+   animation-timeline:view();
+   animation-range:entry 0% cover 32%;
+  }
+  #world-glass .impact-numbers>div:nth-child(2){animation-range:entry 0% cover 37%}
+  #world-glass .impact-numbers>div:nth-child(3){animation-range:entry 0% cover 42%}
+ }
+ @media(max-width:767px){#world-glass{--reveal-rise:18px}}
+}
+
+/* Enhancement starts only after JS confirms the complete stage fits. */
+.story-controls{display:none}
+@media screen and (min-width:900px) and (prefers-reduced-motion:no-preference){
+ .liquid-story[data-pinned=true]{height:calc(280vh - var(--nav-height));padding:0}
+ [data-pinned=true] .story-pin{position:sticky;top:var(--nav-height);height:calc(100vh - var(--nav-height));padding:32px clamp(32px,5vw,80px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto;gap:24px 6%;align-items:center}
+ [data-pinned=true] .story-intro{width:100%;text-align:left;padding:0}
+ [data-pinned=true] .story-intro h2{font-size:clamp(38px,4.2vw,64px)}
+ [data-pinned=true] .story-intro .liquid-kicker{max-width:34ch;line-height:1.8}
+ [data-pinned=true] .story-deck{width:100%;grid-template-columns:1fr;gap:0;perspective:1000px}
+ [data-pinned=true] .story-card{grid-area:1/1;min-height:400px;padding:28px;opacity:var(--chapter-opacity,0);visibility:hidden;transform:translateY(var(--chapter-y,0px)) scale(var(--chapter-scale,1));pointer-events:none;background:radial-gradient(ellipse at 90% 0%,#44336088,transparent 75%),#101522}
+ [data-pinned=true] .build-card{background:radial-gradient(ellipse at 90% 0%,#23566588,transparent 75%),#101522}
+ [data-pinned=true] .belong-card{background:radial-gradient(ellipse at 90% 0%,#303b8288,transparent 75%),#101522}
+ [data-pinned=true] .story-card[data-visible=true]{visibility:visible}
+ /* Clear outgoing lettering before revealing incoming copy over the blended cards. */
+ [data-pinned=true] .story-card>*{opacity:var(--chapter-copy-opacity,1)}
+ [data-pinned=true] .story-card[data-active=true]{pointer-events:auto}
+ [data-pinned=true] .story-symbol{font-size:56px;margin-bottom:16px}
+ [data-pinned=true] .story-card h3{font-size:clamp(36px,3.2vw,48px)}
+ [data-pinned=true] .story-card p{font-size:16px;line-height:1.6}
+ [data-pinned=true] .story-card a{font-size:14px;margin-top:auto;padding-top:20px}
+ [data-pinned=true] .story-controls{grid-column:1/-1;display:flex;align-items:center;gap:12px;position:relative;padding-top:18px}
+ .story-controls:before,.story-controls:after{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:#ffffff1c}
+ .story-controls:after{background:#c5b8f4;transform:scaleX(var(--story-progress,0));transform-origin:left}
+ .story-controls button{min-height:44px;padding:8px 18px;border:1px solid transparent;border-radius:999px;background:transparent;color:#a9a9bb;font:inherit;font-size:14px;cursor:pointer}
+ .story-controls button span{font-size:11px;margin-right:8px;color:#aaa2c5}
+ .story-controls button[aria-pressed=true]{color:#fff;border-color:#ffffff38;background:#ffffff0d}
+ .story-scroll-hint{margin-left:auto;color:#a9a9bb;font-size:12px}
+}
+@media print{.liquid-story[data-pinned]{height:auto}.story-card[inert]{visibility:visible}}

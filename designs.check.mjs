@@ -7,7 +7,9 @@ function element(dataset = {}) {
   const values = {};
   return { dataset, attributes: {}, events: {}, rect: {top: 0, bottom: 100, height: 100}, style: { values, setProperty(k, v) { values[k] = v; } },
     classList: { values: {}, toggle(k, v) { this.values[k] = v; } },
-    setAttribute(k, v) { this.attributes[k] = v; }, getAttribute(k) { return this.attributes[k]; },
+    setAttribute(k, v) { this.attributes[k] = v; }, getAttribute(k) { return this.attributes[k]; }, removeAttribute(k) { delete this.attributes[k]; },
+    contains(node) { return node != null && (this === node || this.link === node); },
+    focus() { context.document.activeElement = this; },
     getBoundingClientRect() { return this.rect; }, addEventListener(k, v) { this.events[k] = v; },
     scrollIntoView(options) { this.scrolled = options; }, scrollBy(options) { this.scrollOptions = options; }
   };
@@ -15,18 +17,21 @@ function element(dataset = {}) {
 // Deliberately omit retired worlds, chooser, comparison header, dock, tabs and slab.
 const ids = Object.fromEntries(['design-note', 'retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'speakers', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
 const story = element();
+const storyPin = {...element(), scrollHeight: 560};
 const cityScene = element();
 const storyCards = Array.from({length: 3}, () => element());
-const navigation = {offsetHeight: 72};
+const storySteps = Array.from({length: 3}, (_, index) => element({storyStep: String(index)}));
+storyCards.forEach((card, index) => { ids[['story-learn', 'story-build', 'story-belong'][index]] = card; });
+const menuSummary = element();
+const menu = {...element(), open: false, querySelector: () => menuSummary};
+const navigation = {offsetHeight: 72, querySelector: () => menu};
 const status = element();
 const statusText = element();
 status.querySelector = () => statusText;
-const contentTypes = ['events', 'programs', 'team', 'speakers', 'sponsors', 'stats', 'connect', 'contact', 'app'];
+const contentTypes = ['events', 'programs', 'team', 'speakers', 'sponsors', 'connect', 'contact', 'app'];
 const containers = Object.fromEntries(contentTypes.map(type => [type, [{
   dataset: {}, closest: () => ({id: 'world-glass'}), innerHTML: ''
 }]]));
-const statNodes = ['totalEvents', 'totalParticipants', 'averageParticipants', 'totalSpeakers', 'topicsCovered', 'totalVenues', 'totalSponsors'].map(stat => element({stat}));
-const yearNodes = [element()];
 const description = element();
 const communityLinks = ['whatsapp', 'luma', 'email', 'speak'].map(link => element({link}));
 const sponsor = element();
@@ -51,15 +56,15 @@ const context = {
   document: {
     body, documentElement: root,
     addEventListener(type, callback) { documentEvents[type] = callback; },
-    querySelectorAll: selector => ({'.story-card': storyCards, '[data-stat]': statNodes, '[data-year]': yearNodes, '[data-community-description]': [description], '[data-link]': communityLinks, '.sponsor-mail-link': [sponsor]})[selector] || containers[selector.match(/^\[data-content="(.+)"\]$/)?.[1]] || [],
-    querySelector: selector => ({'.content-status': status, '.liquid-story': story, '.liquid-nav': navigation, '[data-cityscape]': cityScene})[selector] || null,
+    querySelectorAll: selector => ({'.story-card': storyCards, '[data-story-step]': storySteps, '[data-community-description]': [description], '[data-link]': communityLinks, '.sponsor-mail-link': [sponsor]})[selector] || containers[selector.match(/^\[data-content="(.+)"\]$/)?.[1]] || [],
+    querySelector: selector => ({'.content-status': status, '.liquid-story': story, '.story-pin': storyPin, '.liquid-nav': navigation, '[data-cityscape]': cityScene})[selector] || null,
     getElementById: id => ids[id] || null
   },
   history: {replaceState(_state, _title, url) { lastURL = url; visit(url); }},
   matchMedia: () => motionPreference,
   innerWidth: 1280, innerHeight: 900, scrollY: 0,
   requestAnimationFrame() {},
-  window: {addEventListener(type, callback) { windowEvents[type] = callback; }}
+  window: {scrollY: 0, scrollTo(options) { this.scrolled = options; }, addEventListener(type, callback) { windowEvents[type] = callback; }}
 };
 runInNewContext(readFileSync(new URL('./designs.js', import.meta.url), 'utf8'), context);
 assert.equal(body.dataset.design, 'glass');
@@ -112,10 +117,88 @@ assert.ok(storyCards.every(card => !card.inert), 'All story cards remain readabl
 context.innerWidth = 1280;
 motionPreference.matches = false;
 context.updateMotion();
-assert.ok(storyCards.every(card => !card.inert));
+assert.equal(story.dataset.pinned, 'true');
+const setStoryProgress = progress => {
+  story.rect = {height: 1800, top: navigation.offsetHeight - progress * (1800 - (context.innerHeight - navigation.offsetHeight))};
+  context.updateMotion();
+};
+for (const [progress, expected] of [[-.2, 0], [0, 0], [.32, 0], [.34, 1], [.5, 1], [.67, 2], [1, 2], [1.2, 2], [.5, 1], [0, 0]]) {
+  setStoryProgress(progress);
+  assert.deepEqual(storyCards.map(card => !card.inert), storyCards.map((_, index) => index === expected), `One accessible chapter at progress ${progress}, in either direction`);
+  assert.equal(storySteps[expected].attributes['aria-pressed'], 'true');
+  assert.ok(storyCards.every(card => card.inert === (card.attributes['aria-hidden'] === 'true')));
+}
+const chapterVisuals = () => storyCards.map(card => ({
+  opacity: Number(card.style.values['--chapter-opacity']),
+  copyOpacity: Number(card.style.values['--chapter-copy-opacity']),
+  y: parseFloat(card.style.values['--chapter-y']),
+  scale: Number(card.style.values['--chapter-scale'])
+}));
+for (const [progress, outgoing, incoming] of [[1 / 3, 0, 1], [2 / 3, 1, 2]]) {
+  setStoryProgress(progress);
+  const visuals = chapterVisuals();
+  assert.ok(Math.abs(visuals[outgoing].opacity - .5) < .0001, 'Outgoing chapter is half faded at the handoff');
+  assert.ok(Math.abs(visuals[incoming].opacity - .5) < .0001, 'Incoming chapter fades in before the outgoing one disappears');
+  assert.ok(visuals[outgoing].y < 0 && visuals[incoming].y > 0, 'Chapters travel in opposite directions through the blend');
+  assert.equal(storyCards.filter(card => card.dataset.visible === 'true').length, 2);
+  assert.ok(visuals.every(visual => visual.copyOpacity === 0), 'Lettering clears at the handoff instead of doubling');
+}
+let previous;
+const forwardVisuals = [];
+for (let step = 0; step <= 100; step++) {
+  setStoryProgress(step / 100);
+  const visuals = chapterVisuals();
+  assert.ok(Math.abs(visuals.reduce((sum, visual) => sum + visual.opacity, 0) - 1) < .0002, 'No empty frame or third overlapping chapter');
+  assert.ok(visuals.filter(visual => visual.copyOpacity > 0).length <= 1, 'Only one chapter exposes lettering during a crossfade');
+  visuals.forEach((visual, index) => {
+    assert.ok(visual.opacity >= 0 && visual.opacity <= 1 && visual.copyOpacity >= 0 && visual.copyOpacity <= 1 && Math.abs(visual.y) <= 40 && visual.scale >= .96 && visual.scale <= 1);
+    if (previous) assert.ok(Math.abs(visual.opacity - previous[index].opacity) < .08, 'Opacity changes gradually across chapter boundaries');
+  });
+  forwardVisuals.push(visuals);
+  previous = visuals;
+}
+for (let step = 100; step >= 0; step--) {
+  setStoryProgress(step / 100);
+  assert.deepEqual(chapterVisuals(), forwardVisuals[step], 'Reverse scrolling retraces the exact same visual state');
+}
+context.updateMotion();
+assert.deepEqual(chapterVisuals(), forwardVisuals[0], 'Stopping scroll preserves the current frame');
+storyCards[0].link = {};
+context.document.activeElement = storyCards[0].link;
+setStoryProgress(.8);
+assert.equal(storyCards[0].inert, false, 'Scrolling never hides a focused chapter link');
+assert.deepEqual(chapterVisuals().map(visual => visual.opacity), [1, 0, 0], 'A focused chapter remains fully legible');
+assert.equal(chapterVisuals()[0].copyOpacity, 1);
+context.document.activeElement = null;
+context.updateMotion();
+assert.equal(storyCards[2].inert, false, 'Chapter selection resumes after focus leaves');
+const chapterTarget = {closest: selector => selector === '[data-story-step]' ? storySteps[1] : null};
+documentEvents.click({target: chapterTarget});
+assert.equal(context.document.activeElement, storySteps[1], 'Chapter control owns focus before changing scenes');
+assert.equal(context.window.scrolled.behavior, 'smooth', 'Chapter buttons scrub through intermediate states using native smooth scrolling');
+assert.equal(context.window.scrolled.top, context.window.scrollY + story.rect.top - navigation.offsetHeight + (1800 - (context.innerHeight - navigation.offsetHeight)) * .5);
+visit('#story-belong');
+context.scrollToCurrentAnchor();
+assert.equal(context.window.scrolled.behavior, 'instant', 'Direct chapter hashes land without an animated detour');
+assert.ok(context.window.scrolled.top > context.window.scrollY + story.rect.top - navigation.offsetHeight);
+visit('');
+for (const fallback of ['mobile', 'short', 'overflow', 'reduced']) {
+  context.innerWidth = fallback === 'mobile' ? 390 : 1280;
+  context.innerHeight = fallback === 'short' ? 600 : 900;
+  storyPin.scrollHeight = fallback === 'overflow' ? 1200 : 560;
+  motionPreference.matches = fallback === 'reduced';
+  context.updateMotion();
+  assert.equal(story.dataset.pinned, 'false', `${fallback} uses ordinary flow`);
+  assert.ok(storyCards.every(card => !card.inert && !card.attributes['aria-hidden']), `${fallback} exposes every chapter`);
+  assert.ok(chapterVisuals().every(visual => visual.opacity === 1 && visual.copyOpacity === 1 && visual.y === 0 && visual.scale === 1), `${fallback} clears partial blends`);
+}
+context.innerWidth = 1280; context.innerHeight = 900; storyPin.scrollHeight = 560; motionPreference.matches = false;
+context.updateMotion();
+assert.equal(story.dataset.pinned, 'true', 'Pinning returns when viewport and motion preference allow it');
 
 await context.loadCommunityContent();
 assert.equal(root.dataset.contentReady, 'ready');
+assert.ok(!requested.includes('stats.json'), 'Community content does not request disputed annual totals');
 assert.equal(status.hidden, true);
 assert.equal((containers.team[0].innerHTML.match(/class="community-member"/g) || []).length, source('team').members.length);
 assert.equal((containers.speakers[0].innerHTML.match(/class="community-member"/g) || []).length, source('speakers').speakers.length);
@@ -133,8 +216,6 @@ assert.ok(containers.connect[0].innerHTML.includes('discord.gg'));
 assert.ok(containers.sponsors[0].innerHTML.includes('Space-O Technologies'));
 assert.ok(!containers.sponsors[0].innerHTML.includes('host-number'), 'Sponsors need names, not serial numbers');
 assert.equal((containers.programs[0].innerHTML.match(/class="community-program"/g) || []).length, source('programs').programs.length);
-assert.equal(statNodes[1].textContent, source('stats').stats.totalParticipants);
-assert.ok(yearNodes.every(node => node.textContent === source('stats').year));
 assert.equal(description.textContent, source('links').community.description);
 assert.ok(communityLinks.every(link => link.href));
 assert.ok(sponsor.href.includes('?subject=') && sponsor.href.includes('&body='));
@@ -188,18 +269,31 @@ assert.equal(gallery.scrollOptions.behavior, 'smooth');
 motionPreference.matches = true;
 documentEvents.click({target: galleryTarget});
 assert.equal(gallery.scrollOptions.behavior, 'instant');
-const menu = {open: true};
-documentEvents.click({target: {closest: selector => selector === '.section-menu a' ? {closest: () => menu} : null}});
-assert.equal(menu.open, false);
+menu.open = true;
+menu.link = {closest: () => null};
+documentEvents.click({target: menu.link});
+assert.equal(menu.open, true, 'Clicking inside the menu keeps it open');
+documentEvents.keydown({key: 'Tab'});
+assert.equal(menu.open, true, 'Ordinary keyboard navigation keeps the menu open');
+documentEvents.keydown({key: 'Escape'});
+assert.equal(menu.open, false, 'Escape dismisses the mobile menu');
+assert.equal(context.document.activeElement, menuSummary, 'Escape returns focus to the menu control');
+menu.open = true;
+documentEvents.click({target: {closest: () => null}});
+assert.equal(menu.open, false, 'Clicking outside dismisses the menu');
+menu.open = true;
+documentEvents.click({target: {closest: selector => selector === '.section-menu a' ? menu.link : null}});
+assert.equal(menu.open, false, 'Following a menu link closes the menu');
 
 // Check parsed source, so retained theme comments do not count as active DOM.
 const activeHTML = readFileSync(new URL('./designs.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+assert.ok(!/data-stat=|data-year|data-content="stats"|class="liquid-impact"/.test(activeHTML), 'The active page omits both annual statistics blocks');
 assert.deepEqual([...activeHTML.matchAll(/id="world-([^"]+)"/g)].map(match => match[1]), ['glass']);
 assert.ok(!/data-choice|class="comparison"|id="studio-fill"/.test(activeHTML));
 assert.ok(!/assets\/designs\/(?:studio|city-of-swift|aurora)/.test(activeHTML));
 assert.ok(activeHTML.indexOf('id="glass-events"') < activeHTML.indexOf('id="liquid-story"'), 'Events precede optional storytelling');
 assert.match(activeHTML, /class="liquid-button" href="https:\/\/lu.ma\/user\/swiftahmedabad"[^>]*data-link="luma">Find your next meetup/, 'Hero CTA goes directly to the calendar');
-console.log('PASS: single-theme DOM, legacy URLs, nav offsets, lower story, reduced motion, real content, safe URLs, escaped text, retries, gallery and project subpaths');
+console.log('PASS: single-theme DOM, legacy URLs, nav offsets, pinned chapters/reverse scroll/focus/controls/fallbacks, real content, safe URLs, escaped text, retries, gallery and project subpaths');
 
 /* RETIRED THEMES: comparison, City of Swift dock/reveals and keyboard room tests.
 for (const choice of ['editorial', 'aurora', 'glass', '__proto__']) {

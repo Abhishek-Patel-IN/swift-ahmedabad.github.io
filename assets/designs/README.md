@@ -2,6 +2,46 @@
 
 Only Liquid Night is active at `designs.html`. The current homepage is unchanged. Open Studio, City of Swift and the comparison chooser remain commented out. Older notes below are historical.
 
+## Navigation
+
+The homepage and Liquid Night use floating, rounded glass navigation inspired by [Swift Bengaluru](https://swiftbengaluru.org/). Their implementations remain separate: homepage markup and hash tabs live in `index.html`, `css/navbar.css`, and `app.js`; Liquid Night uses `designs.html`, `designs.css`, and `designs.js`. The shared homepage stylesheet also styles the existing privacy-page navbar.
+
+Both bars place the community brand left and links right, switching to native `<details>` menus below 768px. Menus retain all existing destinations, 44px controls, visible focus, outside-click and link dismissal, and Escape with focus returned to the summary. Short viewports scroll the dropdown; reduced transparency uses an opaque bar. Liquid Night measures the full sticky wrapper, including its top gap, for anchor clearance and pinned-story positioning. No refraction renderer or dependency is added.
+
+Run `node navigation.check.mjs` for homepage routing, desktop/mobile selection, feature deep links, and menu/focus behavior; `node designs.check.mjs` covers Liquid Night menu dismissal and existing offsets/content/story behavior. Visual layout requires HTTP browser review.
+
+## Scroll motion
+
+The Learn / Build / Belong story uses a pinned stage. On windows at least 900px wide with 600px available below navigation, `designs.js` enhances the existing markup: the headline stays beside one large chapter card while ordinary page scrolling changes chapters over 1.8 viewport heights of travel. Each chapter holds for reading, then adjacent chapters crossfade using a smoothstep curve; opacity, up to 40px vertical travel, and up to 4% scale change follow scroll position directly. Pausing holds the current blend; scrolling upward retraces it. The stage releases into the next section at its end. Native chapter buttons scroll smoothly to each chapter's center and expose their selected state; direct hashes land instantly. No wheel/touch interception, animation timer, or dependency is added; updates reuse the existing animation-frame scheduler.
+
+Only the dominant pinned chapter accepts pointer/keyboard input and appears to assistive technology; adjacent card backgrounds can both be visible during a blend. Text fades out before incoming lettering appears, avoiding doubled headlines when pausing midway. A chapter containing focus stays fully legible until focus leaves it. Small/short windows, reduced motion, unavailable JavaScript, and content taller than the stage retain the ordinary layout with all chapters visible; printing also restores the ordinary layout. Font and element resizing recheck the fit. Direct chapter hashes select the corresponding scroll position. The native story headline remains untransformed, and city artwork/hit regions are excluded.
+
+Other section headings, impact numbers, the app overview, and the closing headline retain native CSS view-timeline fade/rise reveals (36px desktop, 18px below 768px). These reveals fall back to static content without timeline/range support, during reduced motion, forced colors, or printing; focused and targeted content bypasses them. CSS timeline reference: [MDN view timelines](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/animation-timeline/view).
+
+Run `node designs.check.mjs` for chapter boundaries, partial fades, exclusive text handoff, bounded movement/scale, continuity, exact reversal, stopped-scroll stability, focus retention, chapter buttons/hashes, and mobile/short/overflow/reduced-motion fallbacks. On October 24, the HTTP preview was reviewed in the in-app browser at 1195×1224. Both handoffs, paused blends, and section release passed; the stage stayed 72px below the viewport top while pinned. At 13 identical scroll positions, reverse scrolling reproduced the exact card/text opacity values. An initial doubled-headline issue was fixed and reviewed again; no console errors were captured after reload. Screenshot: `/tmp/swift-pinned-browser-verified.png` (outside the checkout).
+
+Phone-sized browser review also passed on October 24 at 390×844 and 320×568. The story used its normal-flow fallback: one column, every chapter/copy fully visible and non-inert, no horizontal overflow, and 44px-high chapter links. Scrolling through the cards into the following section and back reproduced the same positions without stuck pinning. Screenshots: `/tmp/swift-mobile-390-verified.png` and `/tmp/swift-mobile-320-verified.png`. The temporary viewport override was reset after review; no product changes were needed.
+
+Remaining browser coverage: buttons/Tab order, direct hashes, other viewport sizes, 200% zoom, reduced motion, print, and physical devices. No frame-rate or physical-device performance measurement is claimed.
+
+## Story headline glass
+
+Retired October 22 at the user's request. The page no longer loads `story-glass.mjs` or mounts its canvas/hook; the heading retains its spacing and native text. The untracked prototype module and check remain on disk. Notes below describe that inactive prototype, not the current page.
+
+`story-glass.mjs` enhances only “One connection. So many possibilities.” The native `h2`, explicit line break, muted span, selection, and surrounding links remain intact. `designs.html` reserves the stage before initialization; the canvas never receives pointer or keyboard input.
+
+The October 21 revision follows the user's request for an Apple Liquid Glass-inspired material: a thinner lens, neutral clear center, opposing edge highlights, lighter shadow, and no rectangular studio reflection. Maximum diameter is now 192px desktop / 128px mobile, with measured placement shrinking to 96px or omitting the effect. Refraction is capped at 0.075em desktop / 0.045em mobile. This is a web approximation for the requested decorative headline, not Apple's native material or its recommended control-layer placement. Apple's [material guidance](https://developer.apple.com/design/human-interface-guidelines/materials) reserves Liquid Glass for navigation and controls.
+
+Fine mouse pointers at widths of at least 768px can move the lens within the stage. Touch, reduced motion, and sustained slow rendering use a still treatment. Selection, printing, increased contrast, forced colors, and reduced transparency expose plain HTML. Frames stop after settling, offscreen, or while the document is hidden. No idle animation is scheduled.
+
+DOM ranges and a temporary baseline mirror measure the fixed headline; complete line runs form a cached texture. The opaque optical interior prevents double letters. Unsupported measurements use non-overlapping decorative glass where space permits. WebKit uses that decorative fallback because its visual typography proof showed a raster seam despite matching widths. Crowded layouts can retain the heading alone. A nonuniform backdrop disables enhancement; the module documents these fixed-headline and solid-backdrop limits with `ponytail:` comments.
+
+Provenance: optical field, normals, ray tracing, and reflection helpers adapted from [React Bits FluidGlass at 382dc89411ce8446ef2b2ed99e352c44a53a1b54](https://github.com/DavidHDev/react-bits/blob/382dc89411ce8446ef2b2ed99e352c44a53a1b54/src/content/Components/FluidGlass/FluidGlass.jsx). The complete matching MIT + Commons Clause notice remains in the module. No React, screenshot dependency, media asset, or external service was added.
+
+Run `node story-glass.check.mjs`, `node designs.check.mjs`, and `node cityscape.check.mjs`. All passed on October 21, 2026. The glass check covers placement, crowded mobile fallback, input/accessibility modes, one-frame scheduling, cancellation, unavailable WebGL, initialization ownership, stale font callbacks, and cleanup.
+
+Earlier browser checks on the superseded material passed selection, print handling, dynamic reduced motion, context recovery, and ten-second intervals with zero draws. Its Chromium motion trace recorded 10.5ms p95 intervals and a final draw about 501ms after input on an Apple M4 Mac mini; that is not a fresh performance result for the revised shader or a confirmed 60Hz hardware test. Current visual/shader startup verification is pending: the browser tool denied access to the existing preview under its URL security policy. Updated desktop/mobile screenshots, complete Safari viewport coverage, 200% zoom, quality downgrade measurements, physical-device interaction, and spoken screen-reader checks remain outstanding. No deployment has occurred.
+
 ## Artwork and registration
 
 Original illustrations generated with the built-in imagegen tool from the approved Option B hover sketch. [Complete prompts and source IDs](liquid-city-prompts.md).
@@ -150,7 +190,6 @@ The February 2025 listing links to [the original event](https://luma.com/ghp1rm2
 The active Liquid Night page uses these local content sources:
 
 - `links.json`: community identity, descriptions, email, and nine social/community destinations.
-- `stats.json`: the year and all seven community statistics.
 - `programs.json`: program names, descriptions, statuses, and destinations.
 - `team.json`: the complete team directory and LinkedIn profiles.
 - `speakers.json`: 30 Ahmedabad speaker profiles in a separate section, with pinned Talks source URLs. Names and two recovered YAML links follow the user's confirmations; biographies reflect event submissions. Source-verified portraits live in `assets/speakers/`, with `imageSource` and `imageSha` provenance in each photo record. Original bytes are preserved; photos load lazily and failed images reveal initials. Gokul remains initials-only. The user confirmed the Nishchal Visavadiya, Tushar Thakar and Riddhi Khunti filename-spelling mappings; 29 speakers have approved portraits. Future unclear identity mappings require confirmation before use.
@@ -158,6 +197,8 @@ The active Liquid Night page uses these local content sources:
 - `app.json`: app identity, App Store/TestFlight destinations, and all 14 feature screenshots.
 - `contact.json` and `sponsorship-email.json`: speaker submissions, email contacts, and the existing sponsorship email draft.
 - `events.json`: curated published event history, with direct source links. This is an editable archive, not a live Luma API feed. New events should be added here; the upcoming-event links always go to the community's Luma calendar.
+
+The 2025 annual impact/statistics blocks are removed from both active pages. `stats.json` retains the historical Talks report values for reference, but neither page fetches or displays them. The report alone does not provide attendance records that independently validate participant totals or averages. Restore statistics only with supporting records.
 
 Shared files also feed the homepage, whose speaker and team tabs remain separate. Serve the site over HTTP; content files are fetched from the same origin. Verify with `node designs.check.mjs` and `node navigation.check.mjs`; inspect both pages after shared profile changes.
 
