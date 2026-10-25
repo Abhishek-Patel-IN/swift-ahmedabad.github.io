@@ -68,7 +68,7 @@ menu.open = true;
 documentEvents.click({ target: { closest: selector => selector === '.navbar-menu a' ? {} : null } });
 assert.equal(menu.open, false, 'Following a menu link dismisses the menu');
 
-const html = readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('./community.html', import.meta.url), 'utf8');
 assert.ok(!html.includes('id="stats-container"'), 'The homepage omits disputed annual totals');
 const nav = html.match(/<nav[\s\S]*?<\/nav>/)[0];
 for (const [tab, hash] of [['community', ''], ['speakers', 'speakers'], ['team', 'team'], ['app', 'app'], ['contact', 'contact']]) {

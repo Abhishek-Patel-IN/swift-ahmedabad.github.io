@@ -45,7 +45,7 @@ const requested = [];
 const source = type => JSON.parse(readFileSync(new URL(`./${type}.json`, import.meta.url), 'utf8'));
 const location = {};
 function visit(path) {
-  const url = new URL(path, 'https://example.github.io/community/designs.html');
+  const url = new URL(path, 'https://example.github.io/community/');
   Object.assign(location, {href: url.href, search: url.search, hash: url.hash});
 }
 visit('?design=unknown#old');
@@ -79,6 +79,8 @@ for (const [hash, expected] of [
   ['aurora-connect', 'glass-connect'], ['mag-gatherings', 'glass-programs'], ['aurora-city', 'liquid-city'],
   ['lounge-top', 'liquid-top'], ['lounge-room', 'liquid-top'], ['mag-top', 'liquid-top'],
   ['glass-team', 'glass-team'], ['glass-speakers', 'glass-speakers'], ['liquid-story', 'liquid-story'], ['main', 'main'], ['glass-features', 'glass-features'],
+  ['team', 'glass-team'], ['speakers', 'glass-speakers'], ['app', 'glass-app'],
+  ['app/feature-1', 'glass-features'], ['contact', 'glass-contact'], ['support', 'glass-contact'],
   ['%E0%A4%A', 'liquid-top']
 ]) {
   visit(`?design=aurora&preview=6#${hash}`);
@@ -86,7 +88,7 @@ for (const [hash, expected] of [
   assert.equal(lastURL.searchParams.get('design'), 'glass');
   assert.equal(lastURL.searchParams.get('preview'), '6');
   assert.equal(lastURL.hash, `#${expected}`);
-  assert.equal(lastURL.pathname, '/community/designs.html', 'Keep GitHub Pages project subpaths');
+  assert.equal(lastURL.pathname, '/community/', 'Keep hosting project subpaths');
 }
 visit('?design=editorial#editorial-events');
 windowEvents.hashchange();
@@ -286,7 +288,20 @@ documentEvents.click({target: {closest: selector => selector === '.section-menu 
 assert.equal(menu.open, false, 'Following a menu link closes the menu');
 
 // Check parsed source, so retained theme comments do not count as active DOM.
-const activeHTML = readFileSync(new URL('./designs.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+const activeHTML = readFileSync(new URL('./index.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+assert.match(activeHTML, /src="designs\.js\?[^\"]+"/, 'The homepage loads the Liquid Night renderer');
+const legacyHTML = readFileSync(new URL('./designs.html', import.meta.url), 'utf8');
+assert.match(legacyHTML, /http-equiv="refresh" content="0;url=\.\/"/, 'Legacy design URL has a native redirect fallback');
+for (const prefix of ['/', '/community/']) {
+  const oldURL = new URL(`${prefix}designs.html?preview=feedback#story-build`, 'https://example.github.io');
+  let redirected;
+  runInNewContext(legacyHTML.match(/<script>([\s\S]*?)<\/script>/)[1], {
+    location: {search: oldURL.search, hash: oldURL.hash, replace(path) { redirected = new URL(path, oldURL); }}
+  });
+  assert.equal(redirected.pathname, prefix, 'Legacy redirect retains hosting project subpaths');
+  assert.equal(redirected.search, oldURL.search, 'Legacy redirect retains query parameters');
+  assert.equal(redirected.hash, oldURL.hash, 'Legacy redirect retains section links');
+}
 assert.ok(!/data-stat=|data-year|data-content="stats"|class="liquid-impact"/.test(activeHTML), 'The active page omits both annual statistics blocks');
 assert.deepEqual([...activeHTML.matchAll(/id="world-([^"]+)"/g)].map(match => match[1]), ['glass']);
 assert.ok(!/data-choice|class="comparison"|id="studio-fill"/.test(activeHTML));

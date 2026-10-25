@@ -1,14 +1,14 @@
 # Liquid Night — connected city (current)
 
-Only Liquid Night is active at `designs.html`. The current homepage is unchanged. Open Studio, City of Swift and the comparison chooser remain commented out. Older notes below are historical.
+Liquid Night is the canonical homepage at `index.html`, promoted for public community feedback on October 25, 2026. `designs.html` forwards old URLs to it with query/hash preservation; `community.html` retains the previous bento page. Future work extends this Liquid Night baseline. Open Studio, City of Swift and the comparison chooser remain commented out. Older notes below are historical.
 
 ## Navigation
 
-The homepage and Liquid Night use floating, rounded glass navigation inspired by [Swift Bengaluru](https://swiftbengaluru.org/). Their implementations remain separate: homepage markup and hash tabs live in `index.html`, `css/navbar.css`, and `app.js`; Liquid Night uses `designs.html`, `designs.css`, and `designs.js`. The shared homepage stylesheet also styles the existing privacy-page navbar.
+The retained bento page and Liquid Night use floating, rounded glass navigation inspired by [Swift Bengaluru](https://swiftbengaluru.org/). Their implementations remain separate: retained bento markup and hash tabs live in `community.html`, `css/navbar.css`, and `app.js`; Liquid Night uses `index.html`, `designs.css`, and `designs.js`. The shared homepage stylesheet also styles the existing privacy-page navbar.
 
 Both bars place the community brand left and links right, switching to native `<details>` menus below 768px. Menus retain all existing destinations, 44px controls, visible focus, outside-click and link dismissal, and Escape with focus returned to the summary. Short viewports scroll the dropdown; reduced transparency uses an opaque bar. Liquid Night measures the full sticky wrapper, including its top gap, for anchor clearance and pinned-story positioning. No refraction renderer or dependency is added.
 
-Run `node navigation.check.mjs` for homepage routing, desktop/mobile selection, feature deep links, and menu/focus behavior; `node designs.check.mjs` covers Liquid Night menu dismissal and existing offsets/content/story behavior. Visual layout requires HTTP browser review.
+Run `node navigation.check.mjs` for retained bento routing, desktop/mobile selection, feature deep links, and menu/focus behavior; `node designs.check.mjs` covers Liquid Night menu dismissal and existing offsets/content/story behavior. Visual layout requires HTTP browser review.
 
 ## Scroll motion
 

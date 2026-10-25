@@ -189,7 +189,7 @@ base.naturalWidth = 1600; emit(base, 'load'); assert.equal(fallback.hidden, true
 console.log('PASS: state, collision placement, popup travel, keyboard/close, Escape, mixed input, responsive loading, failures and scene exit');
 
 // Production markup is the fixture: commented themes and their assets are inactive.
-const html = readFileSync('designs.html', 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+const html = readFileSync('index.html', 'utf8').replace(/<!--[\s\S]*?-->/g, '');
 const sceneMarkup = html.match(/<section\b[^>]*\bdata-cityscape\b[^>]*>([\s\S]*?)<\/section>/)?.[1];
 assert.ok(sceneMarkup, 'Interactive city scene is present');
 assert.equal((sceneMarkup.match(/data-landmark="/g) || []).length, 8);

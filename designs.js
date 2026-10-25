@@ -25,6 +25,9 @@ function currentAnchor(hash) {
   if (!hash) return '';
   let id;
   try { id = decodeURIComponent(hash.slice(1)); } catch { return 'liquid-top'; }
+  if (/^(?:team|speakers|app|contact)$/.test(id)) id = `glass-${id}`;
+  else if (id.startsWith('app/')) id = 'glass-features';
+  else if (id === 'support') id = 'glass-contact';
   const legacySections = /^(?:editorial|aurora)-(events|programs|app|team|sponsors|connect|contact)$/;
   if (legacySections.test(id)) id = `glass-${id.match(legacySections)[1]}`;
   else if (id === 'mag-gatherings') id = 'glass-programs';
