@@ -26,13 +26,13 @@ Remaining browser coverage: buttons/Tab order, direct hashes, other viewport siz
 
 ## Closing headline glass
 
-Reviewer feedback adds native-paint refraction to “Hello, possibility.” only. `headline-glass.mjs` applies an SVG displacement filter directly to the HTML heading, preserving its gradient, selection and accessible text. The old `story-glass.mjs` WebGL prototype remains unmodified and inactive; its renderer is not imported.
+The current closing headline adapts the [React Bits Fluid Glass 320px blob](https://reactbits.dev/components/fluid-glass?size=320&shape=blob), requested after feedback version 2. It uses the reference's signed-distance blob, ray tracing, spectral dispersion and studio reflections, without React or another dependency. The matching MIT + Commons Clause notice and attribution remain in `headline-glass.mjs`. The old `story-glass.mjs` prototype stays unmodified and inactive.
 
-The isolated Safari 27 / Chrome 155 proof rejected a small image composited over `feFlood`: Safari dropped the headline. The active implementation uses a cached, fully opaque displacement image with neutral pixels surrounding the lens, normalized object-bounding-box coordinates, and channel correction for the exact neutral midpoint. No text is repainted into a canvas, and no `backdrop-filter: url(...)` or `foreignObject` capture is used. The canvas creates optical data only. Resources rebuild on size/font changes, not pointer movement.
+Version 2 used direct SVG displacement of native text. Applying the new blob's much stronger bending through an eight-bit displacement map produced rough letter edges, so the blob interior now uses WebGL text sampling. A cached SVG coverage mask removes original lettering only beneath that interior; all surrounding text keeps its native HTML paint. This prevents doubled letters while retaining sharp native type outside the blob. Typography and the existing gradient are measured from the DOM and cached on size/font changes. Pointer frames never repaint/upload text or read pixels back. No `foreignObject`, backdrop capture or second renderer is used.
 
-Fine pointers move one lens, at most 192px wide; touch and reduced motion use a still treatment, at most 128px. Selection, printing, forced colors, increased contrast and reduced transparency expose plain HTML. Rendering stops when settled, offscreen, hidden or suspended in the back-forward cache. Failed initialization keeps the native heading. Small-screen type scales down to keep the full word visible at 320px. The pinned story and cityscape stay independent.
+Fine pointers move one blob, at most 320px wide, with bounded spring deformation; touch and reduced motion use a still treatment, at most 128px. The transparent canvas bounds extend beyond the body's diameter. The fixed blob does not cycle shapes or drift continuously. Selection, printing, forced colors, increased contrast and reduced transparency expose complete native HTML. Rendering stops when settled, offscreen, hidden or suspended in the back-forward cache. Failed initialization, unavailable WebGL or context loss restores the native heading. Small-screen type still fits at 320px. The pinned story and cityscape stay independent.
 
-Run `node headline-glass.check.mjs` for neutral/real displacement, bounded placement, finite scheduling, idle/offscreen/selection/reduced-motion/print/bfcache behavior, fallback and cleanup. Browser checks remain necessary for optical appearance and native text painting.
+Run `node headline-glass.check.mjs` for mask boundaries, shader declarations, cached uploads/readback, finite motion, idle/offscreen/selection/reduced-motion/print/bfcache behavior, GPU failure and cleanup. Actual Safari/Chromium checks remain necessary for shader compilation, gradient typography, optical appearance and native text painting.
 
 ## Reviewer feedback: profiles, chronology and galleries
 
@@ -44,7 +44,7 @@ The March folder says 2025, but its pinned `Info.yml` explicitly says **March 14
 
 Events use a manually scrolling row at every size, with one-card arrow steps, proximity snapping and boundary states. The app gallery's existing single row extends to the page edges, retaining all 14 screenshots and page-sized manual steps. Its controls and heading keep normal gutters. Both galleries derive limits from current geometry after scroll/resize; unavailable buttons remain focusable but do not activate. Contact uses a separate inset panel class, keeping card styling off the section wrapper.
 
-Run `node designs.check.mjs`, `node navigation.check.mjs`, and `node cityscape.check.mjs` alongside the optics check. Check 320px layouts, dialog keyboard behavior, gallery endpoints, 200% zoom, and actual Safari/Chromium painting. Local reviewer changes are not a new public deployment.
+Run `node designs.check.mjs`, `node navigation.check.mjs`, and `node cityscape.check.mjs` alongside the optics check. Check 320px layouts, dialog keyboard behavior, gallery endpoints, 200% zoom, and actual Safari/Chromium painting. Publication is a separate release step; use the current release record before reporting local changes as live.
 
 ## Story headline glass
 
