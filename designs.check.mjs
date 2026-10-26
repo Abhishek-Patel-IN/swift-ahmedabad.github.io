@@ -6,16 +6,21 @@ import { runInNewContext } from 'node:vm';
 function element(dataset = {}) {
   const values = {};
   return { dataset, attributes: {}, events: {}, rect: {top: 0, bottom: 100, height: 100}, style: { values, setProperty(k, v) { values[k] = v; } },
-    classList: { values: {}, toggle(k, v) { this.values[k] = v; } },
+    classList: { values: {}, toggle(k, v) { this.values[k] = v; }, add(k) { this.values[k] = true; }, remove(k) { delete this.values[k]; } },
     setAttribute(k, v) { this.attributes[k] = v; }, getAttribute(k) { return this.attributes[k]; }, removeAttribute(k) { delete this.attributes[k]; },
     contains(node) { return node != null && (this === node || this.link === node); },
     focus() { context.document.activeElement = this; },
-    getBoundingClientRect() { return this.rect; }, addEventListener(k, v) { this.events[k] = v; },
+    getBoundingClientRect() { return this.rect; }, addEventListener(k, v) { this.events[k] = v; }, removeEventListener(k, v) { if (this.events[k] === v) delete this.events[k]; },
+    replaceChildren(...children) { this.children = children; },
     scrollIntoView(options) { this.scrolled = options; }, scrollBy(options) { this.scrollOptions = options; }
   };
 }
 // Deliberately omit retired worlds, chooser, comparison header, dock, tabs and slab.
 const ids = Object.fromEntries(['design-note', 'retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'speakers', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
+const profileParts = Object.fromEntries(['name', 'avatar', 'bio', 'link'].map(name => [`[data-profile-${name}]`, element()]));
+const dialog = ids['profile-dialog'] = {...element(), open: false, closest: () => null, querySelector: selector => profileParts[selector],
+  showModal() { this.open = true; }, close() { this.open = false; this.events.close(); }};
+const extraQueryNodes = {};
 const story = element();
 const storyPin = {...element(), scrollHeight: 560};
 const cityScene = element();
@@ -40,7 +45,7 @@ const body = {dataset: {}};
 const windowEvents = {};
 const documentEvents = {};
 const motionPreference = {matches: false, events: {}, addEventListener(type, callback) { this.events[type] = callback; }};
-let failedRequest = '';
+let failedRequest = '', eventOverride, speakerOverride;
 const requested = [];
 const source = type => JSON.parse(readFileSync(new URL(`./${type}.json`, import.meta.url), 'utf8'));
 const location = {};
@@ -52,11 +57,13 @@ visit('?design=unknown#old');
 let lastURL;
 const context = {
   URL, URLSearchParams, location,
-  fetch: async path => { requested.push(path); return {ok: path !== failedRequest, json: async () => source(path.replace('.json', ''))}; },
+  fetch: async path => { requested.push(path); return {ok: path !== failedRequest, json: async () => path === 'speakers.json' && speakerOverride ? speakerOverride : path === 'events.json' && eventOverride ? eventOverride : source(path.replace('.json', ''))}; },
   document: {
     body, documentElement: root,
     addEventListener(type, callback) { documentEvents[type] = callback; },
-    querySelectorAll: selector => ({'.story-card': storyCards, '[data-story-step]': storySteps, '[data-community-description]': [description], '[data-link]': communityLinks, '.sponsor-mail-link': [sponsor]})[selector] || containers[selector.match(/^\[data-content="(.+)"\]$/)?.[1]] || [],
+    removeEventListener(type, callback) { if (documentEvents[type] === callback) delete documentEvents[type]; },
+    createElement: () => element(),
+    querySelectorAll: selector => extraQueryNodes[selector] || ({'.story-card': storyCards, '[data-story-step]': storySteps, '[data-community-description]': [description], '[data-link]': communityLinks, '.sponsor-mail-link': [sponsor]})[selector] || containers[selector.match(/^\[data-content="(.+)"\]$/)?.[1]] || [],
     querySelector: selector => ({'.content-status': status, '.liquid-story': story, '.story-pin': storyPin, '.liquid-nav': navigation, '[data-cityscape]': cityScene})[selector] || null,
     getElementById: id => ids[id] || null
   },
@@ -64,7 +71,8 @@ const context = {
   matchMedia: () => motionPreference,
   innerWidth: 1280, innerHeight: 900, scrollY: 0,
   requestAnimationFrame() {},
-  window: {scrollY: 0, scrollTo(options) { this.scrolled = options; }, addEventListener(type, callback) { windowEvents[type] = callback; }}
+  cancelAnimationFrame() {},
+  window: {scrollY: 0, scrollTo(options) { this.scrolled = options; }, addEventListener(type, callback) { windowEvents[type] = callback; }, removeEventListener(type, callback) { if (windowEvents[type] === callback) delete windowEvents[type]; }}
 };
 runInNewContext(readFileSync(new URL('./designs.js', import.meta.url), 'utf8'), context);
 assert.equal(body.dataset.design, 'glass');
@@ -261,6 +269,8 @@ assert.equal((containers.speakers[0].innerHTML.match(/class="community-member"/g
 
 const gallery = element();
 gallery.clientWidth = 390;
+gallery.scrollWidth = 1170;
+gallery.scrollLeft = 0;
 ids['glass-features'] = gallery;
 const galleryButton = element({galleryStep: '1'});
 galleryButton.attributes['aria-controls'] = 'glass-features';
@@ -271,6 +281,27 @@ assert.equal(gallery.scrollOptions.behavior, 'smooth');
 motionPreference.matches = true;
 documentEvents.click({target: galleryTarget});
 assert.equal(gallery.scrollOptions.behavior, 'instant');
+const cardGallery = {...gallery, dataset: {gallery: 'cards'}, children: [40, 362, 684, 1006].map(offsetLeft => ({offsetLeft}))};
+assert.equal(context.galleryTarget(cardGallery, 1), 322, 'Event buttons advance one rendered card');
+cardGallery.scrollLeft = 190;
+assert.equal(context.galleryTarget(cardGallery, -1), 0, 'Previous from a partial drag finds the previous snap');
+assert.equal(context.galleryTarget(cardGallery, 1), 322);
+cardGallery.scrollLeft = 644;
+assert.equal(context.galleryTarget(cardGallery, 1), 780, 'Last card clamps to the real end');
+cardGallery.clientWidth = 900;
+assert.equal(context.galleryTarget(cardGallery, 1), 270, 'Resizing uses current bounds instead of stale indices');
+gallery.id = 'glass-features';
+extraQueryNodes['[data-gallery-step]'] = [galleryButton];
+gallery.scrollLeft = 780;
+context.updateGalleryControls(gallery);
+assert.equal(galleryButton.getAttribute('aria-disabled'), 'true');
+gallery.scrollOptions = null;
+documentEvents.click({target: galleryTarget});
+assert.equal(gallery.scrollOptions, null, 'Unavailable controls do not scroll');
+gallery.scrollLeft = 0;
+context.updateGalleryControls(gallery);
+assert.equal(galleryButton.getAttribute('aria-disabled'), 'false');
+delete extraQueryNodes['[data-gallery-step]'];
 menu.open = true;
 menu.link = {closest: () => null};
 documentEvents.click({target: menu.link});
@@ -308,7 +339,79 @@ assert.ok(!/data-choice|class="comparison"|id="studio-fill"/.test(activeHTML));
 assert.ok(!/assets\/designs\/(?:studio|city-of-swift|aurora)/.test(activeHTML));
 assert.ok(activeHTML.indexOf('id="glass-events"') < activeHTML.indexOf('id="liquid-story"'), 'Events precede optional storytelling');
 assert.match(activeHTML, /class="liquid-button" href="https:\/\/lu.ma\/user\/swiftahmedabad"[^>]*data-link="luma">Find your next meetup/, 'Hero CTA goes directly to the calendar');
-console.log('PASS: single-theme DOM, legacy URLs, nav offsets, pinned chapters/reverse scroll/focus/controls/fallbacks, real content, safe URLs, escaped text, retries, gallery and project subpaths');
+// Verified chronology stays local, uses Ahmedabad dates, and never mutates profiles.
+const speakers = source('speakers').speakers, events = source('events').events;
+const profileBytes = JSON.stringify(speakers);
+const ordered = context.orderSpeakers(speakers, events, '2026-10-25');
+assert.deepEqual(Array.from(ordered.slice(0, 4), speaker => speaker.name), ['Kanishka Chaudhry', 'Pradip Sutariya', 'Rahul Parmar', 'Ratnesh Jain']);
+assert.equal(JSON.stringify(speakers), profileBytes);
+assert.equal(context.ahmedabadDate(new Date('2026-03-13T18:30:00Z')), '2026-03-14', 'Calendar boundaries use Ahmedabad rather than UTC');
+const march = events.find(event => event.source?.includes('/10.'));
+assert.equal(march.date, '2026-03-14', 'Approved correction survives the upstream folder year');
+assert.ok(march.speakerIds.includes(speakers.find(speaker => speaker.name === 'Ratnesh Jain').id), 'Named community updates count');
+assert.ok(!events[0].date && !events[0].speakerIds, 'Year-only WWDC26 does not invent speaking evidence');
+const pair = [{id:'b', name:'Zed'}, {id:'a', name:'Amy'}, {id:'c', name:'Unknown'}];
+const appearance = {date:'2026-03-14', status:'Past event', source:march.source, speakerIds:['b', 'a', 'a']};
+assert.deepEqual(Array.from(context.orderSpeakers(pair, [appearance], '2026-10-25'), p => p.id), ['a','b','c'], 'Ties are alphabetical; missing dates trail; duplicate relations are harmless');
+assert.deepEqual(Array.from(context.orderSpeakers(pair, [appearance, {...appearance,date:'2026-04-01',speakerIds:['b']}], '2026-10-25'), p => p.id), ['b','a','c'], 'A new verified appearance changes the order');
+for (const invalid of [{...appearance,date:'2026-02-30'}, {...appearance,source:''}, {...appearance,speakerIds:['missing']}]) assert.throws(() => context.orderSpeakers(pair, [invalid]));
+for (const excluded of [{...appearance,date:'2030-01-01'}, {...appearance,status:'Upcoming event'}, {...appearance,status:'Cancelled'}, {...appearance,status:'Unverified'}]) {
+  assert.deepEqual(Array.from(context.orderSpeakers(pair, [excluded], '2026-10-25'), p => p.id), ['a','c','b']);
+}
+failedRequest = 'events.json';
+await context.loadCommunityContent();
+assert.ok(containers.speakers[0].innerHTML.includes('recency is unavailable'));
+assert.ok(containers.team[0].innerHTML.includes('Kajal Seth'));
+failedRequest = '';
+eventOverride = {events:[{...march,date:'2025-02-30'}]};
+await context.loadCommunityContent();
+assert.equal(root.dataset.contentReady, 'partial');
+assert.ok(containers.speakers[0].innerHTML.includes('recency is unavailable'));
+eventOverride = null;
+await context.loadCommunityContent();
+assert.equal(root.dataset.contentReady, 'ready');
+assert.ok(!containers.speakers[0].innerHTML.includes('recency is unavailable'));
+for (const broken of [{speakers:null},{speakers:[{id:'bad',name:'Unsafe',about:'Example',linkedIn:'javascript:alert(1)'}]}]) {
+  speakerOverride = broken;
+  await context.loadCommunityContent();
+  assert.equal(root.dataset.contentReady, 'partial', 'Invalid deferred speaker data preserves the retry/error path');
+  assert.ok(containers.team[0].innerHTML.includes('Kajal Seth'));
+}
+speakerOverride = null;
+await context.loadCommunityContent();
+assert.equal(root.dataset.contentReady, 'ready');
+
+// Exercise the real dialog/overflow functions, without implementing a fake focus trap.
+const bioButton = {...element(), hidden:true, isConnected:true};
+const preview = {...element(), clientWidth:220, clientHeight:81, scrollHeight:300, textContent:'First <script> paragraph.\nSecond paragraph.'};
+const avatar = {cloneNode: () => ({avatar:true})};
+const card = {...element(), querySelector: selector => ({'h3':{textContent:'Example speaker'}, '.member-initials':avatar, '.bio-preview':preview, '.profile-link':{href:'https://example.com/profile'}, '[data-read-bio]':bioButton})[selector]};
+bioButton.closest = preview.closest = () => card;
+extraQueryNodes['.bio-preview'] = [preview];
+context.initContentUI();
+assert.equal(bioButton.hidden, false, 'Only overflowing previews expose Read bio');
+context.openProfile(bioButton);
+assert.equal(dialog.open, true);
+assert.equal(profileParts['[data-profile-name]'].textContent, 'Example speaker');
+assert.equal(context.document.activeElement, profileParts['[data-profile-name]']);
+assert.deepEqual(Array.from(profileParts['[data-profile-bio]'].children, p => p.textContent), ['First <script> paragraph.', 'Second paragraph.'], 'Biographies create text paragraphs, never HTML');
+dialog.close();
+assert.equal(context.document.activeElement, bioButton);
+assert.equal(root.classList.values['profile-open'], undefined);
+preview.scrollHeight = 81;
+context.initContentUI();
+assert.equal(bioButton.hidden, false, 'A focused action is not removed during resizing');
+context.document.activeElement = null;
+context.initContentUI();
+assert.equal(bioButton.hidden, true, 'Short biographies do not open redundant dialogs');
+delete extraQueryNodes['.bio-preview'];
+assert.match(activeHTML, /class="community-section contact-panel" id="glass-contact"/);
+assert.match(activeHTML, /<dialog[^>]+aria-labelledby="profile-dialog-name"/);
+assert.match(activeHTML, /class="profile-dialog-body"[^>]+tabindex="0"[^>]+role="region"/, 'Long biographies remain keyboard-scrollable in Safari');
+assert.match(activeHTML, /src="headline-glass\.mjs\?/);
+assert.ok(!/src="story-glass\.mjs/.test(activeHTML), 'Retired WebGL renderer stays inactive');
+assert.ok(!/<a\s[^>]*class="community-member"/.test(containers.speakers[0].innerHTML), 'Profile cards do not nest buttons in external links');
+console.log('PASS: homepage, chronology/provenance/local dates, bio dialog/overflow/focus, card/page gallery navigation/bounds, content safety, retries and preserved story/navigation');
 
 /* RETIRED THEMES: comparison, City of Swift dock/reveals and keyboard room tests.
 for (const choice of ['editorial', 'aurora', 'glass', '__proto__']) {

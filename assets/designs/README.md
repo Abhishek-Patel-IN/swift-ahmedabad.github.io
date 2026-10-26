@@ -24,6 +24,28 @@ Phone-sized browser review also passed on October 24 at 390×844 and 320×568. T
 
 Remaining browser coverage: buttons/Tab order, direct hashes, other viewport sizes, 200% zoom, reduced motion, print, and physical devices. No frame-rate or physical-device performance measurement is claimed.
 
+## Closing headline glass
+
+Reviewer feedback adds native-paint refraction to “Hello, possibility.” only. `headline-glass.mjs` applies an SVG displacement filter directly to the HTML heading, preserving its gradient, selection and accessible text. The old `story-glass.mjs` WebGL prototype remains unmodified and inactive; its renderer is not imported.
+
+The isolated Safari 27 / Chrome 155 proof rejected a small image composited over `feFlood`: Safari dropped the headline. The active implementation uses a cached, fully opaque displacement image with neutral pixels surrounding the lens, normalized object-bounding-box coordinates, and channel correction for the exact neutral midpoint. No text is repainted into a canvas, and no `backdrop-filter: url(...)` or `foreignObject` capture is used. The canvas creates optical data only. Resources rebuild on size/font changes, not pointer movement.
+
+Fine pointers move one lens, at most 192px wide; touch and reduced motion use a still treatment, at most 128px. Selection, printing, forced colors, increased contrast and reduced transparency expose plain HTML. Rendering stops when settled, offscreen, hidden or suspended in the back-forward cache. Failed initialization keeps the native heading. Small-screen type scales down to keep the full word visible at 320px. The pinned story and cityscape stay independent.
+
+Run `node headline-glass.check.mjs` for neutral/real displacement, bounded placement, finite scheduling, idle/offscreen/selection/reduced-motion/print/bfcache behavior, fallback and cleanup. Browser checks remain necessary for optical appearance and native text painting.
+
+## Reviewer feedback: profiles, chronology and galleries
+
+Liquid Night keeps original profile data and avatars. Its cards have separate LinkedIn links and conditional “Read bio” buttons. A shared native dialog shows safe text paragraphs, retains authored breaks, provides a keyboard-focusable scrolling biography region, locks background scroll, and restores focus on dismissal. Three-line previews are enabled only when the dialog is available; short biographies need no popup. Overflow is rechecked on resize, font changes and directory disclosure, with no polling. The retained bento renderer is unchanged.
+
+Speaker recency is derived from optional `date`, `speakerIds` and `source` fields on the ten verified event records in `events.json`. Dates are local Ahmedabad calendar dates, not UTC slices of the generated timestamps. Evidence comes from the pinned Talks snapshot's events, talk–speaker links, and named `type: talk` agenda entries, including community updates. IDs are deduplicated and restricted to the 30 approved profiles. Only explicitly completed `Past event` records dated no later than today qualify. No speaker/date is inferred for the year-only WWDC26 record.
+
+The March folder says 2025, but its pinned `Info.yml` explicitly says **March 14, 2026**; the user approved that correction. The regression check protects it and Ratnesh Jain's named community update. Dates and appearance evidence belong to events; no latest-date fields are maintained on speaker profiles. The first four speakers come from the same newest-first list as the expanded directory, with English alphabetical ties and undated speakers last. Failed event loading or invalid chronology keeps readable alphabetical profiles with a recency/retry notice.
+
+Events use a manually scrolling row at every size, with one-card arrow steps, proximity snapping and boundary states. The app gallery's existing single row extends to the page edges, retaining all 14 screenshots and page-sized manual steps. Its controls and heading keep normal gutters. Both galleries derive limits from current geometry after scroll/resize; unavailable buttons remain focusable but do not activate. Contact uses a separate inset panel class, keeping card styling off the section wrapper.
+
+Run `node designs.check.mjs`, `node navigation.check.mjs`, and `node cityscape.check.mjs` alongside the optics check. Check 320px layouts, dialog keyboard behavior, gallery endpoints, 200% zoom, and actual Safari/Chromium painting. Local reviewer changes are not a new public deployment.
+
 ## Story headline glass
 
 Retired October 22 at the user's request. The page no longer loads `story-glass.mjs` or mounts its canvas/hook; the heading retains its spacing and native text. The untracked prototype module and check remain on disk. Notes below describe that inactive prototype, not the current page.

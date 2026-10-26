@@ -239,9 +239,26 @@ function contentLink(url, body, className = '') {
   const href = safeURL(url);
   return `<a class="${escapeHTML(className)}" href="${escapeHTML(href)}"${href.startsWith('mailto:') ? '' : ' target="_blank" rel="noopener noreferrer"'}>${body}</a>`;
 }
+function ahmedabadDate(date = new Date()) {
+  const parts = new Intl.DateTimeFormat('en', {timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit'}).formatToParts(date);
+  return ['year', 'month', 'day'].map(type => parts.find(part => part.type === type).value).join('-');
+}
+function orderSpeakers(speakers, events = [], today = ahmedabadDate()) {
+  const ids = new Set(speakers.map(speaker => speaker.id));
+  const latest = new Map();
+  for (const event of events) {
+    if (event.date == null && event.speakerIds == null && event.source == null) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(event.date) || Number.isNaN(Date.parse(event.date)) || new Date(event.date).toISOString().slice(0, 10) !== event.date ||
+        !Array.isArray(event.speakerIds) || event.speakerIds.some(id => !ids.has(id)) ||
+        !/^https:\/\/github\.com\/Swift-Ahmedabad\/Talks\/blob\/[a-f0-9]{40}\/Swift-Ahmedabad\/.+\/Info\.yml$/.test(event.source)) throw new Error('Unverified speaker chronology');
+    if (event.status !== 'Past event' || event.date > today) continue;
+    for (const id of event.speakerIds) if (event.date > (latest.get(id) || '')) latest.set(id, event.date);
+  }
+  return [...speakers].sort((a, b) => (latest.get(b.id) || '').localeCompare(latest.get(a.id) || '') || a.name.localeCompare(b.name, 'en', {sensitivity: 'base'}) || a.id.localeCompare(b.id));
+}
 function contentHTML(type, data, theme) {
   const text = escapeHTML;
-  if (type === 'events') return `<div class="event-list">${data.events.map((event, index) => contentLink(event.url, `
+  if (type === 'events') return `<div class="feature-gallery-heading event-gallery-heading"><p>Explore our event archive</p><div><button type="button" data-gallery-step="-1" aria-label="Previous event" aria-controls="${theme}-event-gallery">←</button><button type="button" data-gallery-step="1" aria-label="Next event" aria-controls="${theme}-event-gallery">→</button></div></div><div class="event-list" data-gallery="cards" id="${theme}-event-gallery" tabindex="0" role="region" aria-label="Swift Ahmedabad event archive">${data.events.map((event, index) => contentLink(event.url, `
     <div class="event-art">${event.image ? `<img src="${text(safeURL(event.image))}" alt="${text(event.title)} event poster" loading="lazy" width="800" height="800">` : `<span class="event-date-art">${text(event.period)}<svg aria-hidden="true"><use href="#bird"/></svg></span>`}</div>
     <div class="event-copy"><div class="event-meta"><span>${text(event.period)}</span><span>${text(event.status)}</span></div><h3>${text(event.title)}</h3><p>${text(event.description)}</p><div class="event-place">${text(event.venue)}</div><span class="event-action">View event details <b aria-hidden="true">↗</b></span></div>`, 'event-entry')).join('')}</div><p class="content-footnote">${text(data.subtitle)}</p>`;
   if (type === 'programs') {
@@ -252,15 +269,120 @@ function contentHTML(type, data, theme) {
     const label = type === 'speakers' ? 'speakers' : 'team members';
     const memberHTML = member => {
       if (member.image && !/^assets\/speakers\/[\w.-]+\.(?:jpe?g|png)$/.test(member.image)) throw new Error('Unsupported profile image');
-      return contentLink(member.linkedIn, `<span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span><div><h3>${text(member.name)}</h3><p>${text(member.about)}</p><span>Connect on LinkedIn ↗</span></div>`, 'community-member');
+      return `<article class="community-member"><span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span><div><h3>${text(member.name)}</h3><p class="bio-preview">${text(member.about)}</p><div class="profile-actions"><button type="button" data-read-bio aria-haspopup="dialog" aria-controls="profile-dialog" hidden>Read bio<span class="visually-hidden">: ${text(member.name)}</span></button>${contentLink(member.linkedIn, 'Connect on LinkedIn ↗', 'profile-link')}</div></div></article>`;
     };
-    return `<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map(memberHTML).join('')}</div></details>`;
+    return `${data.recencyUnavailable ? '<p class="content-footnote" role="status">Speaker recency is unavailable. Profiles are shown alphabetically; try loading content again.</p>' : ''}<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map(memberHTML).join('')}</div></details>`;
   }
   if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => contentLink(sponsor.url, `<strong>${text(sponsor.name)}</strong><span aria-hidden="true">↗</span>`, 'community-host')).join('')}</div>`;
   if (type === 'links') return `<div class="community-links">${data.links.map(link => contentLink(link.url, `<span class="connect-symbol" aria-hidden="true">${text({whatsapp:'W', luma:'↗', linkedin:'in', github:'⌘', instagram:'◎', twitter:'𝕏', discord:'D', aratt:'A', maps:'⌖'}[link.id] || '↗')}</span><div><h3>${text(link.name)}</h3><p>${text(link.description || 'Find us in Ahmedabad')}</p></div><b aria-hidden="true">↗</b>`, 'community-connect-link')).join('')}</div>`;
   if (type === 'contact') return `<div class="contact-list">${data.items.map(item => contentLink(item.email ? `mailto:${item.email}${item.id === 'sponsor' ? '?subject=Sponsorship%20offer%20for%20Swift%20Ahmedabad' : ''}` : item.url, `<h3>${text(item.title)}</h3><p>${text(item.description)}</p><span>${item.email ? text(item.email) : 'Submit your talk proposal'} <b aria-hidden="true">↗</b></span>`, `community-contact${item.id === 'sponsor' ? ' sponsor-mail-link' : ''}`)).join('')}</div>`;
-  if (type === 'app') return `<div class="app-overview"><div class="app-description"><p class="community-eyebrow">YOUR COMMUNITY, IN YOUR POCKET</p><div class="app-product-name"><img src="${text(safeURL(data.app.icon))}" width="64" height="64" alt="${text(data.app.name)} app icon" loading="lazy"><h2>${text(data.app.name)}</h2></div><h3>${text(data.app.tagline)}</h3><p>${text(data.app.description)}</p><div class="app-downloads">${contentLink(data.app.appStoreUrl, 'Download on the App Store ↗', 'app-store-link')}${contentLink(data.app.testFlightUrl, 'Try the TestFlight beta ↗', 'app-beta-link')}<a href="privacy-policy.html">Privacy policy</a></div></div><div class="app-feature-intro"><svg aria-hidden="true"><use href="#bird"/></svg><p>Discover a talk.<br>Prepare your own.<br><span>Keep learning.</span></p><span>${data.features.length} ways to explore the Swift ecosystem.</span></div></div><div class="feature-gallery-heading"><p>Inside the app</p><div><button type="button" data-gallery-step="-1" aria-label="Previous app features" aria-controls="${theme}-features">←</button><button type="button" data-gallery-step="1" aria-label="Next app features" aria-controls="${theme}-features">→</button></div></div><div class="feature-gallery" id="${theme}-features" tabindex="0" role="region" aria-label="${text(data.app.name)} app feature gallery">${data.features.map(feature => `<article class="app-feature"><div class="feature-phone"><img src="${text(safeURL(feature.image))}" alt="${text(feature.title)} in the Talks app" loading="lazy" width="390" height="844"></div><h3>${text(feature.title)}</h3><p>${text(feature.description)}</p></article>`).join('')}</div>`;
+  if (type === 'app') return `<div class="app-overview"><div class="app-description"><p class="community-eyebrow">YOUR COMMUNITY, IN YOUR POCKET</p><div class="app-product-name"><img src="${text(safeURL(data.app.icon))}" width="64" height="64" alt="${text(data.app.name)} app icon" loading="lazy"><h2>${text(data.app.name)}</h2></div><h3>${text(data.app.tagline)}</h3><p>${text(data.app.description)}</p><div class="app-downloads">${contentLink(data.app.appStoreUrl, 'Download on the App Store ↗', 'app-store-link')}${contentLink(data.app.testFlightUrl, 'Try the TestFlight beta ↗', 'app-beta-link')}<a href="privacy-policy.html">Privacy policy</a></div></div><div class="app-feature-intro"><svg aria-hidden="true"><use href="#bird"/></svg><p>Discover a talk.<br>Prepare your own.<br><span>Keep learning.</span></p><span>${data.features.length} ways to explore the Swift ecosystem.</span></div></div><div class="feature-gallery-heading"><p>Inside the app</p><div><button type="button" data-gallery-step="-1" aria-label="Previous app features" aria-controls="${theme}-features">←</button><button type="button" data-gallery-step="1" aria-label="Next app features" aria-controls="${theme}-features">→</button></div></div><div class="feature-gallery" data-gallery="pages" id="${theme}-features" tabindex="0" role="region" aria-label="${text(data.app.name)} app feature gallery">${data.features.map(feature => `<article class="app-feature"><div class="feature-phone"><img src="${text(safeURL(feature.image))}" alt="${text(feature.title)} in the Talks app" loading="lazy" width="390" height="844"></div><h3>${text(feature.title)}</h3><p>${text(feature.description)}</p></article>`).join('')}</div>`;
   return '';
+}
+
+function galleryTarget(gallery, direction) {
+  const maximum = Math.max(0, gallery.scrollWidth - gallery.clientWidth);
+  const current = Math.max(0, Math.min(maximum, gallery.scrollLeft));
+  if (gallery.dataset.gallery !== 'cards') return Math.max(0, Math.min(maximum, current + direction * gallery.clientWidth));
+  const first = gallery.children[0]?.offsetLeft || 0;
+  const positions = [...new Set([0, ...Array.from(gallery.children, card => Math.min(maximum, card.offsetLeft - first)), maximum])].sort((a, b) => a - b);
+  return direction > 0 ? positions.find(position => position > current + 1) ?? maximum : positions.reverse().find(position => position < current - 1) ?? 0;
+}
+function updateGalleryControls(gallery) {
+  const maximum = Math.max(0, gallery.scrollWidth - gallery.clientWidth);
+  document.querySelectorAll('[data-gallery-step]').forEach(button => {
+    if (button.getAttribute('aria-controls') !== gallery.id) return;
+    const disabled = String(Number(button.dataset.galleryStep) < 0 ? gallery.scrollLeft <= 1 : gallery.scrollLeft >= maximum - 1);
+    if (button.getAttribute('aria-disabled') !== disabled) button.setAttribute('aria-disabled', disabled);
+  });
+}
+let disposeContentUI = () => {};
+function initContentUI() {
+  disposeContentUI();
+  const cleanup = [];
+  const galleries = [...document.querySelectorAll('[data-gallery]')];
+  const galleryResize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => galleries.forEach(updateGalleryControls));
+  galleries.forEach(gallery => {
+    const update = () => updateGalleryControls(gallery);
+    gallery.addEventListener('scroll', update, {passive: true});
+    cleanup.push(() => gallery.removeEventListener('scroll', update));
+    galleryResize?.observe(gallery);
+    if (gallery.firstElementChild) galleryResize?.observe(gallery.firstElementChild);
+    update();
+  });
+  cleanup.push(() => galleryResize?.disconnect());
+  const dialog = document.getElementById('profile-dialog');
+  if (dialog?.showModal) {
+    const previews = [...document.querySelectorAll('.bio-preview')];
+    let frame = null, disposed = false;
+    function syncPreviews() {
+      frame = null;
+      if (disposed) return;
+      previews.forEach(preview => {
+        if (!preview.clientWidth) return;
+        const card = preview.closest('.community-member');
+        card.classList.add('bio-enabled');
+        const button = card.querySelector('[data-read-bio]');
+        if (button !== document.activeElement) button.hidden = preview.scrollHeight <= preview.clientHeight + 1;
+      });
+    }
+    const queue = () => { if (!disposed && frame === null) frame = requestAnimationFrame(syncPreviews); };
+    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(queue);
+    previews.forEach(preview => resize?.observe(preview));
+    document.addEventListener('toggle', queue, true);
+    document.addEventListener('focusout', queue);
+    window.addEventListener('resize', queue);
+    document.fonts?.addEventListener('loadingdone', queue);
+    document.fonts?.ready.then(queue);
+    syncPreviews();
+    cleanup.push(() => {
+      disposed = true;
+      if (frame !== null) cancelAnimationFrame(frame);
+      resize?.disconnect();
+      document.removeEventListener('toggle', queue, true);
+      document.removeEventListener('focusout', queue);
+      window.removeEventListener('resize', queue);
+      document.fonts?.removeEventListener('loadingdone', queue);
+    });
+  }
+  disposeContentUI = () => cleanup.forEach(dispose => dispose());
+}
+const profileDialog = document.getElementById('profile-dialog');
+let profileInvoker, profileScroll = 0, backdropDown = false;
+function openProfile(button) {
+  if (!profileDialog?.showModal || profileDialog.open) return;
+  const card = button.closest('.community-member');
+  profileDialog.querySelector('[data-profile-name]').textContent = card.querySelector('h3').textContent;
+  profileDialog.querySelector('[data-profile-avatar]').replaceChildren(card.querySelector('.member-initials').cloneNode(true));
+  const paragraphs = card.querySelector('.bio-preview').textContent.split(/\n+/).map(text => {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = text;
+    return paragraph;
+  });
+  profileDialog.querySelector('[data-profile-bio]').replaceChildren(...paragraphs);
+  profileDialog.querySelector('[data-profile-link]').href = card.querySelector('.profile-link').href;
+  profileInvoker = button;
+  profileScroll = window.scrollY;
+  document.documentElement.classList.add('profile-open');
+  profileDialog.showModal();
+  profileDialog.querySelector('[data-profile-name]').focus({preventScroll: true});
+}
+if (profileDialog?.showModal) {
+  const outside = event => {
+    const rect = profileDialog.getBoundingClientRect();
+    return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+  };
+  profileDialog.addEventListener('pointerdown', event => { backdropDown = event.target === profileDialog && outside(event); });
+  profileDialog.addEventListener('pointercancel', () => { backdropDown = false; });
+  profileDialog.addEventListener('click', event => {
+    if (event.target.closest('[data-profile-close]') || (backdropDown && event.target === profileDialog && outside(event))) profileDialog.close();
+    backdropDown = false;
+  });
+  profileDialog.addEventListener('close', () => {
+    document.documentElement.classList.remove('profile-open');
+    window.scrollTo({top: profileScroll, behavior: 'instant'});
+    if (profileInvoker?.isConnected) profileInvoker.focus({preventScroll: true});
+  });
 }
 
 async function loadCommunityContent() {
@@ -271,10 +393,13 @@ async function loadCommunityContent() {
   retry.hidden = true;
   let sponsorshipEmail;
   const files = ['links', 'programs', 'team', 'speakers', 'sponsors', 'app', 'contact', 'events', 'sponsorship-email'];
+  const loaded = {};
   const results = await Promise.allSettled(files.map(async type => {
     const response = await fetch(`${type}.json`);
     if (!response.ok) throw new Error(`Could not load ${type}`);
     const data = await response.json();
+    if (type === 'speakers' && !Array.isArray(data?.speakers)) throw new Error('Invalid speaker profiles');
+    loaded[type] = data;
     if (type === 'sponsorship-email') sponsorshipEmail = data;
     if (type === 'links') {
       data.links.forEach(link => { links[link.id] = safeURL(link.url); });
@@ -284,11 +409,28 @@ async function loadCommunityContent() {
     if (type === 'contact') {
       links.speak = safeURL(data.items.find(item => item.id === 'speakers').url);
     }
+    if (type === 'speakers') return;
     document.querySelectorAll(`[data-content="${type === 'links' ? 'connect' : type}"]`).forEach(container => {
       const theme = container.closest('.world').id.replace('world-', '');
       container.innerHTML = contentHTML(type, data, theme);
     });
   }));
+  if (loaded.speakers) {
+    try {
+      let speakers, recencyUnavailable = !loaded.events;
+      try { speakers = orderSpeakers(loaded.speakers.speakers, loaded.events?.events); }
+      catch (error) {
+        speakers = orderSpeakers(loaded.speakers.speakers);
+        recencyUnavailable = true;
+        results.push({status: 'rejected', reason: error});
+      }
+      const markup = contentHTML('speakers', {speakers, recencyUnavailable}, 'glass');
+      document.querySelectorAll('[data-content="speakers"]').forEach(container => { container.innerHTML = markup; });
+    } catch (error) {
+      results.push({status: 'rejected', reason: error});
+    }
+  }
+  initContentUI();
   document.querySelectorAll('[data-link]').forEach(anchor => {
     const href = links[anchor.dataset.link];
     if (href) anchor.href = href;
@@ -319,10 +461,12 @@ document.addEventListener('click', event => {
   }
   const menuLink = event.target.closest('.section-menu a');
   if (sectionMenu?.open && (menuLink || !sectionMenu.contains(event.target))) sectionMenu.open = false;
+  const bio = event.target.closest('[data-read-bio]');
+  if (bio) openProfile(bio);
   const button = event.target.closest('[data-gallery-step]');
-  if (!button) return;
+  if (!button || button.getAttribute('aria-disabled') === 'true') return;
   const gallery = document.getElementById(button.getAttribute('aria-controls'));
-  gallery.scrollBy({left: Number(button.dataset.galleryStep) * gallery.clientWidth, behavior: reducedMotion.matches ? 'instant' : 'smooth'});
+  gallery.scrollBy({left: galleryTarget(gallery, Number(button.dataset.galleryStep)) - gallery.scrollLeft, behavior: reducedMotion.matches ? 'instant' : 'smooth'});
 });
 document.addEventListener('keydown', event => {
   if (event.key !== 'Escape' || !sectionMenu?.open) return;

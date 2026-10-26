@@ -6,9 +6,10 @@
 <title>Swift Ahmedabad · Swift developer community</title>
 <meta name="description" content="Swift Ahmedabad: meetups, workshops, community events, our team, and the Talks app for Apple-platform developers.">
 <link rel="icon" href="assets/swiftAhmedabad.jpg">
-<link rel="stylesheet" href="designs.css?v=speaker-photos-1">
-<script src="designs.js?v=feedback-home-1" defer></script>
+<link rel="stylesheet" href="designs.css?v=review-feedback-2">
+<script src="designs.js?v=review-feedback-2" defer></script>
 <script type="module" src="cityscape.mjs?v=6"></script>
+<script type="module" src="headline-glass.mjs?v=2"></script>
 </head>
 <body data-design="glass">
 <a class="skip" href="#main">Skip to content</a>
@@ -128,8 +129,8 @@
 
  <section class="community-section community-connect" id="glass-connect"><div class="community-heading"><div><p class="community-eyebrow">STAY IN THE CONVERSATION</p><h2>Find us around the internet.</h2></div><p>Announcements, conversations, projects, and updates from the community.</p></div><div data-content="connect"><p class="loading-copy">Loading community content…</p></div></section>
 
- <section class="community-section community-contact" id="glass-contact"><div class="community-heading"><div><p class="community-eyebrow">YOUR NEXT CONNECTION</p><h2>Let’s make it happen.</h2></div><p>Have a talk, a venue, a sponsorship offer, or a question? Reach the Swift Ahmedabad team.</p></div><div data-content="contact"><p class="loading-copy">Loading community content…</p></div></section>
- <section class="liquid-join" id="liquid-join"><div class="join-glow"></div><p class="liquid-kicker">THE NEXT GREAT CONNECTION STARTS HERE.</p><h2>Hello,<br><span>possibility.</span></h2><p>You bring the curiosity. We’ll save you a place.</p><a class="liquid-button" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join Swift Ahmedabad ↗</a><a class="liquid-secondary" href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Find your next meetup ›</a></section>
+ <section class="community-section contact-panel" id="glass-contact"><div class="community-heading"><div><p class="community-eyebrow">YOUR NEXT CONNECTION</p><h2>Let’s make it happen.</h2></div><p>Have a talk, a venue, a sponsorship offer, or a question? Reach the Swift Ahmedabad team.</p></div><div data-content="contact"><p class="loading-copy">Loading community content…</p></div></section>
+ <section class="liquid-join" id="liquid-join"><div class="join-glow"></div><p class="liquid-kicker">THE NEXT GREAT CONNECTION STARTS HERE.</p><div class="headline-glass" data-headline-glass><h2>Hello,<br><span>possibility.</span></h2></div><p>You bring the curiosity. We’ll save you a place.</p><a class="liquid-button" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join Swift Ahmedabad ↗</a><a class="liquid-secondary" href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Find your next meetup ›</a></section>
  <footer class="liquid-footer"><span>Swift Ahmedabad · Independent. Community-led.</span><div><a href="#glass-team">The people</a><a href="code-of-conduct.html">Code of conduct</a><a href="https://www.instagram.com/swift.ahmedabad/" target="_blank" rel="noopener noreferrer" data-link="instagram">Instagram ↗</a></div></footer>
 </div>
 <!-- 02 · Open Studio: a community home inspired by Swift Pune’s layout. -->
@@ -195,6 +196,11 @@
 </div>
 -->
 </main>
+<dialog class="profile-dialog" id="profile-dialog" aria-labelledby="profile-dialog-name">
+ <header><div data-profile-avatar aria-hidden="true"></div><h2 id="profile-dialog-name" data-profile-name tabindex="-1"></h2><button type="button" data-profile-close aria-label="Close biography">×</button></header>
+ <div class="profile-dialog-body" data-profile-bio tabindex="0" role="region" aria-label="Biography"></div>
+ <footer><a data-profile-link target="_blank" rel="noopener noreferrer">Connect on LinkedIn ↗</a></footer>
+</dialog>
 <div class="preview-note"><span id="design-note">Swift Ahmedabad</span><div><a href="code-of-conduct.html">Code of conduct</a><a href="privacy-policy.html">Privacy policy</a><a href="mailto:helloswiftahmedabad@gmail.com" target="_blank" rel="noopener noreferrer" data-link="email">Email us</a></div><p>Swift Ahmedabad is an independent, community-run group. Apple and Swift are trademarks of Apple Inc.</p></div>
 </body>
 </html>

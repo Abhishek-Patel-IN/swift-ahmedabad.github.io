@@ -1,6 +1,6 @@
 /* Liquid Night only: shared community content and existing lower-page sections.
    The retired theme/scene rules remain in the archive block below. */
-:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none;--nav-height:72px}
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-synthesis:none;--nav-height:72px;--section-gutter:clamp(20px,4vw,72px)}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:calc(var(--nav-height) + 24px)}
 body{margin:0;background:#060609;color:#f5f5f7}
@@ -104,7 +104,7 @@ html{scroll-padding-top:calc(var(--nav-height) + 24px)}
 .impact-numbers span{font-size:10px}
 .impact-date{font-size:9px;margin-top:29px}
 .liquid-join{padding:90px 20px 75px}
-.liquid-join h2{font-size:74px}
+.liquid-join h2{font-size:min(74px,20vw)}
 .liquid-join>p:not(.liquid-kicker){font-size:12px}
 .liquid-footer{flex-direction:column;padding:22px;font-size:9px;gap:17px}
 .liquid-footer>div{gap:20px}
@@ -337,7 +337,7 @@ html{scroll-behavior:auto}
 .section-menu>div{right:-55px}
 .liquid-nav .section-menu>div{right:-65px}
 }
-.liquid-world .community-section{width:100%;max-width:none;padding-inline:clamp(20px,4vw,72px)}
+.liquid-world .community-section{width:100%;max-width:none;padding-inline:var(--section-gutter)}
 .liquid-footer{max-width:none;padding-inline:clamp(20px,4vw,72px)}
 
 
@@ -1101,7 +1101,7 @@ body{background:#060a15}
 @supports (animation-timeline:view()) and (animation-range:entry 0% cover 32%){
  @media screen and (prefers-reduced-motion:no-preference) and (forced-colors:none){
   /* Keyboard and anchor navigation should land on fully legible content. */
-  #world-glass :is(.community-heading,.liquid-impact>h2,.impact-numbers>div,.app-overview,.liquid-join>h2):where(:not(:focus-within):not(:target):not(:target *)){
+  #world-glass :is(.community-heading,.liquid-impact>h2,.impact-numbers>div,.app-overview,.liquid-join>:is(h2,.headline-glass)):where(:not(:focus-within):not(:target):not(:target *)){
    animation:liquid-scroll-reveal linear both;
    animation-timeline:view();
    animation-range:entry 0% cover 32%;
@@ -1141,3 +1141,46 @@ body{background:#060a15}
  .story-scroll-hint{margin-left:auto;color:#a9a9bb;font-size:12px}
 }
 @media print{.liquid-story[data-pinned]{height:auto}.story-card[inert]{visibility:visible}}
+
+/* Reviewer feedback: retain native scrolling and the existing card/avatar design. */
+html{scrollbar-gutter:stable}
+html.profile-open{overflow:hidden}
+.liquid-world .event-list{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:4px 0 24px;scrollbar-width:thin;scrollbar-color:var(--content-accent) var(--content-panel)}
+.liquid-world .event-entry{flex:0 0 min(360px,82vw);display:flex;flex-direction:column;scroll-snap-align:start}
+.event-entry:focus-visible{outline-offset:-4px}
+.liquid-world .event-art{flex-shrink:0}
+.liquid-world .event-copy{display:flex;flex:1;flex-direction:column}
+.liquid-world .event-action{margin-top:auto;padding-top:24px}
+.event-gallery-heading{margin-top:0}
+[data-gallery-step][aria-disabled=true]{opacity:.35;cursor:default}
+[data-gallery]:focus-visible{outline:2px solid var(--content-accent);outline-offset:-3px}
+.liquid-world .feature-gallery{margin-inline:calc(-1 * var(--section-gutter));padding-inline:var(--section-gutter);scroll-padding-inline:var(--section-gutter)}
+.liquid-world .community-section.contact-panel{width:calc(100% - 2 * var(--section-gutter));padding:25px;border:1px solid var(--content-line);border-radius:23px;background:linear-gradient(130deg,#ffffff0e,#ffffff03);box-shadow:inset 0 1px 0 #ffffff0c}
+.bio-enabled .bio-preview{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.community-member .bio-preview{margin-bottom:12px}
+.profile-actions{display:flex;flex-direction:column;align-items:flex-start;gap:4px;margin-top:auto}
+.profile-actions button,.profile-actions a{display:inline-flex;align-items:center;min-height:44px;font-size:.8125rem;line-height:1.4;color:var(--content-accent)}
+.profile-actions button{padding:0;border:0;background:none;text-align:left;text-decoration:underline;text-underline-offset:4px}
+.profile-dialog{--content-accent:#cab4f7;--content-line:#ffffff28;--content-muted:#a9a9bb;width:min(640px,calc(100% - 32px));max-height:calc(100vh - 48px);max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px);padding:24px;border:1px solid var(--content-line);border-radius:23px;background:#101522;color:#eeeef4;box-shadow:0 24px 100px #0008;overflow:hidden}
+.profile-dialog[open]{display:flex;flex-direction:column;gap:24px}
+.profile-dialog::backdrop{background:#020611b8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.profile-dialog header{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.profile-dialog header h2{font-size:1.4rem;letter-spacing:-.035em;line-height:1.25;overflow-wrap:anywhere}
+.profile-dialog [data-profile-close]{align-self:flex-start;flex-shrink:0;margin-left:auto;width:44px;height:44px;border:1px solid var(--content-line);border-radius:50%;background:#ffffff08;font-size:26px;line-height:1}
+.profile-dialog .member-initials{color:var(--content-accent);background:linear-gradient(145deg,#ad84db22,#5a83d622);border-color:#d8baff40}
+.profile-dialog-body{overflow-y:auto;overscroll-behavior-y:contain;min-height:0;padding:2px 4px 2px 0}
+.profile-dialog-body:focus-visible{outline:2px solid var(--content-accent);outline-offset:-3px;border-radius:4px}
+.profile-dialog-body p{font-size:1rem;line-height:1.7;color:#c1c4d1;overflow-wrap:anywhere}
+.profile-dialog-body p+p{margin-top:1em}
+.profile-dialog footer{flex-shrink:0}
+.profile-dialog footer a{display:inline-flex;align-items:center;min-height:44px;color:var(--content-accent);font-size:.875rem}
+@media(max-width:760px){.profile-dialog{padding:18px}.profile-dialog header{gap:12px}.profile-dialog header h2{font-size:1.2rem}}
+@media(prefers-reduced-transparency:reduce){.profile-dialog::backdrop{background:#060a15;backdrop-filter:none;-webkit-backdrop-filter:none}}
+@media(forced-colors:active){.profile-dialog{background:Canvas;color:CanvasText;border-color:CanvasText}.profile-dialog-body p,.profile-dialog footer a{color:CanvasText}}
+@media print{.bio-enabled .bio-preview{display:block;-webkit-line-clamp:unset;overflow:visible}[data-read-bio],.feature-gallery-heading>div,.profile-dialog{display:none!important}.liquid-world .event-list,.liquid-world .feature-gallery{display:flex;flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0}}
+
+.headline-glass{position:relative;width:fit-content;max-width:100%;margin:28px auto}
+.liquid-join .headline-glass h2{margin:0}
+.headline-optics{position:absolute;inset:0;pointer-events:none;width:1px;height:1px;overflow:visible}
+.headline-lens{position:absolute;pointer-events:none;border-radius:50%;border:1px solid #e5edff66;background:radial-gradient(circle at 30% 20%,#ffffff08,transparent 65%);box-shadow:inset 2px 2px 3px #ffffff44,inset -2px -2px 4px #b7a9ec33,0 12px 24px #0002}
+@media print,(forced-colors:active),(prefers-contrast:more),(prefers-reduced-transparency:reduce){.headline-lens{display:none!important}.headline-glass h2{filter:none!important}}
