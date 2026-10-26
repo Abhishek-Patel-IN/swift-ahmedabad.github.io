@@ -481,7 +481,7 @@ export function initHeadlineGlass(stage) {
     dirty = false;
     const rect = heading.getBoundingClientRect();
     width = rect.width; height = rect.height;
-    diameter = Math.floor(Math.min(fine.matches && !reduced.matches ? 320 : 128, width * .82, height * .85));
+    diameter = Math.floor(Math.min(fine.matches && !reduced.matches ? 220 : 128, width * .82, height * .85));
     if (diameter < 64 || !width || !height) { ready = false; hide(); return; }
     const canvas = document.createElement('canvas'), context = canvas.getContext('2d');
     if (!context) throw new Error('Coverage map unavailable');
