@@ -413,6 +413,107 @@ assert.ok(!/src="story-glass\.mjs/.test(activeHTML), 'Retired WebGL renderer sta
 assert.ok(!/<a\s[^>]*class="community-member"/.test(containers.speakers[0].innerHTML), 'Profile cards do not nest buttons in external links');
 console.log('PASS: homepage, chronology/provenance/local dates, bio dialog/overflow/focus, card/page gallery navigation/bounds, content safety, retries and preserved story/navigation');
 
+// Run the actual title initializer against its production markup and a controlled clock.
+{
+  const title = activeHTML.match(/<h1 aria-label="Swift Ahmedabad">Swift<span class="city-words" aria-hidden="true">([\s\S]*?)<\/h1>/)[1];
+  const labels = [...title.matchAll(/<span lang="(\w+)" ([^>]*)>([^<]*)<\/span>/g)];
+  assert.deepEqual(labels.map(match => match.slice(1)), [
+    ['en', 'class="current"', 'Ahmedabad'], ['gu', 'hidden', 'અમદાવાદ'], ['hi', 'hidden', 'अहमदाबाद']
+  ]);
+  assert.match(activeHTML, /<details class="section-menu">[\s\S]*<button type="button" class="city-rotation" hidden>Pause city name rotation<\/button>[\s\S]*<\/details>/);
+  assert.ok(!activeHTML.match(/<div class="city-title">[\s\S]*?<\/div>/)[0].includes('<button'), 'Hero heading has no playback button');
+  const words = labels.map(() => {
+    const animations = new Set();
+    return {...element(), getAnimations: () => [...animations], animate(frames, options) {
+      const effect = {frames, options, cancel() { animations.delete(effect); }};
+      animations.add(effect);
+      return effect;
+    }};
+  });
+  words[0].classList.add('current');
+  const group = {children: words}, button = element();
+  button.hidden = true;
+  context.document.querySelector = selector => ({'.city-words': group, '.city-rotation': button})[selector];
+  assert.equal(context.initCityTitle(), undefined);
+  assert.ok(button.hidden, 'Unavailable observer keeps the static HTML fallback');
+  let io, now = 0, nextID = 0, pending;
+  context.IntersectionObserver = class {
+    constructor(callback, options) { this.callback = callback; this.options = options; io = this; }
+    observe(target) { assert.equal(target, group); }
+    ratio(value) { this.callback([{intersectionRatio: value}], this); }
+    takeRecords() { return []; }
+    disconnect() {}
+  };
+  context.performance = {now: () => now};
+  context.setTimeout = (callback, delay) => {
+    assert.equal(pending, undefined, 'At most one title timer');
+    pending = {id: ++nextID, at: now + delay, callback};
+    return nextID;
+  };
+  context.clearTimeout = id => { if (id === pending?.id) pending = undefined; };
+  const advance = ms => {
+    now += ms;
+    if (pending && now >= pending.at) {
+      const {callback} = pending;
+      pending = undefined;
+      callback();
+    }
+  };
+  const current = () => words.findIndex(word => word.classList.values.current);
+  const held = index => {
+    assert.deepEqual(words.filter(word => word.classList.values.current), [words[index]]);
+    assert.ok(words.every(word => word.getAnimations().length === 0), 'Held spelling has no opacity effects');
+    assert.equal(pending, undefined);
+  };
+  motionPreference.matches = true;
+  const observe = context.initCityTitle();
+  assert.ok(button.hidden);
+  io.ratio(1); held(0);
+  motionPreference.matches = false; motionPreference.events.change();
+  assert.equal(button.hidden, false);
+  assert.equal(io.options.rootMargin, `-${navigation.offsetHeight}px 0px 0px`);
+  assert.equal(io.options.threshold, .5);
+  io.ratio(.49); held(0); io.ratio(.5);
+  assert.equal(words[0].getAnimations()[0].options.delay, 4880);
+  advance(4999); assert.equal(current(), 0);
+  button.events.click(); held(0);
+  const click = () => button.events.click();
+  click(); assert.equal(words[0].getAnimations().length, 0, 'Resume during the final 120ms holds fully opaque');
+  advance(1); assert.equal(current(), 1);
+  assert.equal(words[1].getAnimations()[0].options.duration, 120);
+  advance(50); click(); held(1);
+  assert.equal(button.textContent, 'Resume city name rotation');
+  menu.open = true;
+  menu.link = button;
+  button.closest = () => null;
+  documentEvents.click({target: button});
+  assert.equal(menu.open, true, 'Menu playback control remains available after activation');
+  io.ratio(0); context.document.hidden = true; documentEvents.visibilitychange();
+  click(); io.ratio(1); advance(10000); held(1);
+  context.document.hidden = false; documentEvents.visibilitychange();
+  advance(4949); assert.equal(current(), 1); advance(1); assert.equal(current(), 2);
+  advance(5000); assert.equal(current(), 0);
+  advance(3000); io.ratio(0); advance(9000); held(0); io.ratio(1);
+  const stale = pending.callback;
+  click(); click(); click(); click(); stale();
+  assert.equal(pending.at - now, 2000);
+  advance(1999); assert.equal(current(), 0); advance(1); assert.equal(current(), 1);
+  button.focus(); motionPreference.matches = true; motionPreference.events.change();
+  held(0); assert.ok(button.hidden); assert.equal(context.document.activeElement, menuSummary);
+  motionPreference.matches = false; motionPreference.events.change();
+  assert.equal(pending.at - now, 5000);
+  advance(30000); assert.equal(current(), 1, 'Delayed wake advances once'); assert.equal(pending.at - now, 5000);
+  advance(3000); windowEvents.pagehide(); held(1);
+  const oldObserver = io;
+  windowEvents.pageshow({persisted: true}); oldObserver.ratio(1); held(1);
+  io.ratio(1); assert.equal(pending.at - now, 2000);
+  observe(90); held(1); assert.equal(io.options.rootMargin, '-90px 0px 0px');
+  io.ratio(1); click(); windowEvents.pagehide(); windowEvents.pageshow({persisted: true}); io.ratio(1); held(1);
+  motionPreference.matches = true; motionPreference.events.change(); motionPreference.matches = false; motionPreference.events.change();
+  held(0); click(); assert.equal(pending.at - now, 5000);
+}
+console.log('PASS: multilingual title timing, order, fades, interruptions, visibility, pause, restored pages and reduced motion');
+
 /* RETIRED THEMES: comparison, City of Swift dock/reveals and keyboard room tests.
 for (const choice of ['editorial', 'aurora', 'glass', '__proto__']) {
   context.selectDesign(choice, true);

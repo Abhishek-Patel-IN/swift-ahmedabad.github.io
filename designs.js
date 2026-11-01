@@ -74,6 +74,96 @@ const storyPin = document.querySelector('.story-pin');
 const storyCards = [...document.querySelectorAll('.story-card')];
 const storySteps = [...document.querySelectorAll('[data-story-step]')];
 
+function initCityTitle() {
+  const group = document.querySelector('.city-words');
+  const button = document.querySelector('.city-rotation');
+  const menuToggle = sectionMenu?.querySelector('summary');
+  const words = Array.from(group?.children || []);
+  if (!button || !menuToggle || words.length < 2 || !words[0].animate || !words[0].getAnimations || typeof IntersectionObserver === 'undefined') return;
+
+  const dwell = 5000, fade = 120;
+  let index = 0, remaining = dwell, deadline = 0, timer = null;
+  let visible = false, paused = false, suspended = false, observer, inset;
+  const eligible = () => visible && !document.hidden && !paused && !suspended && !reducedMotion.matches;
+
+  function stop() {
+    if (timer !== null) {
+      clearTimeout(timer);
+      timer = null;
+      remaining = Math.max(0, deadline - performance.now());
+    }
+    words[index].getAnimations().forEach(animation => animation.cancel());
+  }
+  function select(next) {
+    words[index].classList.remove('current');
+    index = next;
+    words[index].classList.add('current');
+  }
+  function start(entering = false) {
+    const word = words[index];
+    deadline = performance.now() + remaining;
+    if (entering) word.animate({opacity: [0, 1]}, {duration: fade, easing: 'ease-out'});
+    if (remaining >= fade) word.animate({opacity: [1, 0]}, {duration: fade, delay: remaining - fade, easing: 'ease-in'});
+    const id = setTimeout(() => {
+      if (timer !== id) return;
+      const latest = observer.takeRecords().at(-1);
+      if (latest) visible = latest.intersectionRatio >= .5;
+      if (!eligible()) { stop(); return; }
+      stop();
+      select((index + 1) % words.length);
+      remaining = dwell;
+      start(true);
+    }, Math.ceil(remaining));
+    timer = id;
+  }
+  function sync() {
+    if (!eligible()) stop();
+    else if (timer === null) start();
+  }
+  function observe(top) {
+    if (top === inset && observer) return;
+    observer?.disconnect();
+    visible = false;
+    stop();
+    inset = top;
+    observer = new IntersectionObserver((entries, source) => {
+      if (source !== observer) return;
+      visible = entries.at(-1).intersectionRatio >= .5;
+      sync();
+    }, {threshold: .5, rootMargin: `-${top}px 0px 0px`});
+    observer.observe(group);
+  }
+  function motionChanged() {
+    if (reducedMotion.matches) {
+      stop();
+      select(0);
+      remaining = dwell;
+      if (document.activeElement === button) menuToggle.focus({preventScroll: true});
+    }
+    button.hidden = reducedMotion.matches;
+    sync();
+  }
+  observe(navigation?.offsetHeight || 0);
+  button.addEventListener('click', () => {
+    paused = !paused;
+    button.textContent = paused ? 'Resume city name rotation' : 'Pause city name rotation';
+    sync();
+  });
+  document.addEventListener('visibilitychange', sync);
+  window.addEventListener('pagehide', () => { suspended = true; sync(); });
+  window.addEventListener('pageshow', event => {
+    if (!event.persisted) return;
+    suspended = false;
+    inset = undefined;
+    observe(navigation?.offsetHeight || 0);
+  });
+  reducedMotion.addEventListener('change', motionChanged);
+  words.forEach(word => { word.hidden = false; });
+  motionChanged();
+  return observe;
+}
+const observeCityTitle = initCityTitle();
+
 function scrollToStoryStep(index, behavior = 'instant') {
   const top = navigation?.offsetHeight || 0;
   const rect = story.getBoundingClientRect();
@@ -145,6 +235,7 @@ function updateMotion() {
   */
   const top = navigation?.offsetHeight || 0;
   document.documentElement.style.setProperty('--nav-height', `${top}px`);
+  observeCityTitle?.(top);
   updateStoryMotion(top);
   if (cityScene) {
     const rect = cityScene.getBoundingClientRect();

@@ -69,29 +69,26 @@ export function initCityscape(scene) {
     panel.style.left = `${position.left - rect.left}px`;
     panel.style.top = `${position.top - rect.top}px`;
   }
-  // Give phones and enlarged text their own space above the fixed artwork.
-  const stage = scene.querySelector('.cityscape-stage');
-  const identity = scene.querySelector('.liquid-hero-copy');
-  function fitIdentity() {
-    if (!stage || !identity) return;
-    const stageRect = stage.getBoundingClientRect();
-    const textWidth = identity.querySelector('h1 span').getBoundingClientRect().width;
-    const space = identity.offsetHeight;
-    const expanded = portrait.matches || textWidth > stageRect.width * .36 + 2 || space > stageRect.height * .42;
-    scene.dataset.expandedCopy = String(expanded);
-    scene.style.setProperty('--identity-space', `${expanded ? space + 32 : 0}px`);
-    schedulePosition();
-  }
-  if (typeof ResizeObserver !== 'undefined' && stage && identity) {
-    const layout = new ResizeObserver(fitIdentity);
-    layout.observe(stage);
-    layout.observe(identity);
-  }
-  fitIdentity();
   function schedulePosition() {
     if (frame || !state.activeLandmark) return;
     frame = requestAnimationFrame(() => { frame = null; positionPanel(); });
   }
+  const stage = scene.querySelector('.cityscape-stage');
+  const identity = scene.querySelector('.liquid-hero-copy');
+  const cityWords = identity?.querySelector('.city-words');
+  function fitIdentity() {
+    if (!stage || !cityWords) return;
+    const bounds = stage.getBoundingClientRect();
+    const space = identity.offsetHeight;
+    const expanded = portrait.matches || cityWords.getBoundingClientRect().width > bounds.width * .36 + 2 || space > bounds.height * .42;
+    scene.dataset.expandedCopy = String(expanded);
+    schedulePosition();
+  }
+  if (typeof ResizeObserver !== 'undefined' && stage && cityWords) {
+    const layout = new ResizeObserver(fitIdentity);
+    [scene, stage, identity, cityWords].forEach(target => layout.observe(target));
+  }
+  fitIdentity();
   function send(event) {
     clearTimeout(leaveTimer);
     state = landmarkState(state, event);

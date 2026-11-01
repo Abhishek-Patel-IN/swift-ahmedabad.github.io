@@ -6,9 +6,9 @@
 <title>Swift Ahmedabad · Swift developer community</title>
 <meta name="description" content="Swift Ahmedabad: meetups, workshops, community events, our team, and the Talks app for Apple-platform developers.">
 <link rel="icon" href="assets/swiftAhmedabad.jpg">
-<link rel="stylesheet" href="designs.css?v=fluid-blob-3">
-<script src="designs.js?v=review-feedback-2" defer></script>
-<script type="module" src="cityscape.mjs?v=6"></script>
+<link rel="stylesheet" href="designs.css?v=p2-016-layered">
+<script src="designs.js?v=p2-016-menu" defer></script>
+<script type="module" src="cityscape.mjs?v=10"></script>
 <script type="module" src="headline-glass.mjs?v=5"></script>
 </head>
 <body data-design="glass">
@@ -51,16 +51,22 @@
   <div class="liquid-nav-inner">
    <a class="liquid-brand" href="#liquid-top" aria-label="Swift Ahmedabad home"><svg aria-hidden="true"><use href="#bird"/></svg>Swift Ahmedabad</a>
    <div class="liquid-nav-links">
+    <a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a class="liquid-nav-join" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a>
     <details class="section-menu">
      <summary aria-label="Navigation menu"><span class="nav-menu-icon" aria-hidden="true"></span></summary>
-     <div><a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a href="#glass-sponsors">Hosts & sponsors</a><a href="#glass-connect">Connect</a><a href="#glass-contact">Contact</a><a href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a></div>
+     <div><a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a href="#glass-sponsors">Hosts & sponsors</a><a href="#glass-connect">Connect</a><a href="#glass-contact">Contact</a><a href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a><button type="button" class="city-rotation" hidden>Pause city name rotation</button></div>
     </details>
-    <a href="#liquid-top">Home</a><a href="#glass-events">Events</a><a href="#glass-speakers">Speakers</a><a href="#glass-team">Team</a><a href="#glass-app">Talks app</a><a class="liquid-nav-join" href="https://chat.whatsapp.com/FlZuWzMf8ak8C8yAmfRRVf" target="_blank" rel="noopener noreferrer" data-link="whatsapp">Join us ↗</a>
    </div>
   </div>
  </nav>
  <section class="liquid-hero" id="liquid-top">
-  <section class="liquid-cityscape" id="liquid-city" data-cityscape aria-label="Explore Ahmedabad’s landmarks">
+  <section class="liquid-cityscape" id="liquid-city" data-cityscape data-expanded-copy="true" aria-label="Explore Ahmedabad’s landmarks">
+   <div class="liquid-hero-copy">
+    <div class="city-title">
+     <h1 aria-label="Swift Ahmedabad">Swift<span class="city-words" aria-hidden="true"><span lang="en" class="current">Ahmedabad</span><span lang="gu" hidden>અમદાવાદ</span><span lang="hi" hidden>अहमदाबाद</span></span></h1>
+    </div>
+    <p class="city-hero-subtitle">A local community for Swift and Apple-platform builders.</p><a class="liquid-button" href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Find your next meetup <span aria-hidden="true">↗</span></a>
+   </div>
    <div class="cityscape-viewport"><div class="cityscape-stage">
     <picture class="cityscape-master" aria-hidden="true"><source media="(max-width: 767px)" srcset="assets/designs/liquid-city-portrait-v3.webp" width="900" height="1200"><img class="cityscape-base" src="assets/designs/liquid-city-desktop-v3.webp" width="1672" height="941" alt="" fetchpriority="high" decoding="async"></picture>
     <div class="cityscape-atmosphere" aria-hidden="true"></div>
@@ -75,7 +81,6 @@
      <div class="city-piece landmark-bridge" data-artwork="bridge"><picture><source media="(max-width: 767px)" data-color-src="assets/designs/liquid-city-portrait-v3.webp"><img class="landmark-color" data-color-src="assets/designs/liquid-city-desktop-v3.webp" width="1672" height="941" alt="" decoding="async" hidden></picture></div>
     </div>
     <div class="cityscape-sheen" aria-hidden="true"></div>
-    <div class="liquid-hero-copy"><h1>Swift<br><span>Ahmedabad.</span></h1><p class="city-hero-subtitle">A local community for Swift and Apple-platform builders.</p><a class="liquid-button" href="https://lu.ma/user/swiftahmedabad" target="_blank" rel="noopener noreferrer" data-link="luma">Find your next meetup <span aria-hidden="true">↗</span></a></div>
     <div class="cityscape-hotspots" role="group" aria-label="Ahmedabad landmarks" aria-describedby="cityscape-hint">
      <div class="city-target hotspot-pol"><button class="city-hotspot" type="button" data-landmark="pol" data-title="Old-city pols" data-description="Traditional neighbourhoods bring closely grouped homes, carved facades and shared community spaces together." aria-label="Explore Old-city pols" aria-controls="landmark-information" aria-expanded="false"></button></div>
      <div class="city-target hotspot-jaali"><button class="city-hotspot" type="button" data-landmark="jaali" data-title="Sidi Saiyyed jaali" data-description="The Tree of Life lattice turns carved stone into a delicate pattern of intertwining branches." aria-label="Explore Sidi Saiyyed jaali" aria-controls="landmark-information" aria-expanded="false"></button></div>

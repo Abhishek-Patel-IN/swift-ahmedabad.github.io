@@ -80,13 +80,19 @@ scene.selectors = {'[data-landmark]': buttons, '[data-artwork]': pieces, '.landm
 globalThis.document = new Element(); globalThis.window = new Element();
 window.innerWidth = 1200; window.innerHeight = 900;
 const portrait = new Element(); portrait.matches = false; window.matchMedia = () => portrait;
-const stage = new Element(), identity = new Element(), identityTitle = new Element();
-stage.rect = rect(0, 0, 1200, 675); identity.offsetHeight = 200; identityTitle.rect = rect(0, 0, 300, 100);
-identity.selectors = {'h1 span': identityTitle};
-scene.selectors['.cityscape-stage'] = stage; scene.selectors['.liquid-hero-copy'] = identity;
-scene.style.setProperty = (name, value) => { scene.style[name] = value; };
-let observeLayout;
-globalThis.ResizeObserver = class { constructor(fn) { observeLayout = fn; } observe() {} };
+const stage = new Element(), identity = new Element(), cityWords = new Element();
+stage.rect = rect(0, 0, 1200, 675);
+identity.offsetHeight = 200;
+cityWords.rect = rect(0, 0, 300, 100);
+identity.selectors['.city-words'] = cityWords;
+scene.selectors['.cityscape-stage'] = stage;
+scene.selectors['.liquid-hero-copy'] = identity;
+let observeGeometry;
+const layoutTargets = new Set();
+globalThis.ResizeObserver = class {
+  constructor(callback) { observeGeometry = callback; }
+  observe(target) { layoutTargets.add(target); }
+};
 let observeWorld;
 globalThis.MutationObserver = class { constructor(fn) { observeWorld = fn; } observe() {} };
 let frame;
@@ -98,19 +104,19 @@ globalThis.IntersectionObserver = window.IntersectionObserver = class {
   observe() {} disconnect() {}
 };
 const city = initCityscape(scene);
+assert.ok([scene, stage, identity, cityWords].every(node => layoutTargets.has(node)));
+assert.equal(scene.dataset.expandedCopy, 'false', 'Desktop text layers over the sky when it fits');
+portrait.matches = true; observeGeometry();
+assert.equal(scene.dataset.expandedCopy, 'true', 'Phone text sits above the artwork');
+portrait.matches = false; observeGeometry();
 assert.equal(scene.dataset.expandedCopy, 'false');
-identity.offsetHeight = 450; observeLayout();
-assert.equal(scene.dataset.expandedCopy, 'true', 'Enlarged heading moves above fixed artwork');
-assert.equal(scene.style['--identity-space'], '482px');
-identity.offsetHeight = 200; observeLayout();
-assert.equal(scene.dataset.expandedCopy, 'false', 'Normal text restores the integrated composition');
-identityTitle.rect.width = 600; observeLayout();
-assert.equal(scene.dataset.expandedCopy, 'true', 'Wide enlarged title also gets independent space');
-identityTitle.rect.width = 300; observeLayout();
-portrait.matches = true; observeLayout();
-assert.equal(scene.dataset.expandedCopy, 'true', 'Phone introduction and calendar link stay above the artwork');
-portrait.matches = false; observeLayout();
-assert.equal(scene.dataset.expandedCopy, 'false', 'Desktop restores integrated copy when it fits');
+cityWords.rect.width = 600; observeGeometry();
+assert.equal(scene.dataset.expandedCopy, 'true', 'Wide native-script or enlarged text gets its own space');
+cityWords.rect.width = 300;
+identity.offsetHeight = 450; observeGeometry();
+assert.equal(scene.dataset.expandedCopy, 'true', 'Tall text stays clear of landmarks');
+identity.offsetHeight = 200; observeGeometry();
+assert.equal(scene.dataset.expandedCopy, 'false');
 assert.equal(panel.hidden, true);
 assert.equal(requested.length, 0, 'Optional colors wait until the scene approaches');
 observers[0].callback([{isIntersecting: true}]);
@@ -120,6 +126,9 @@ assert.equal(pieces[1].dataset.colorReady, 'false', 'Slow region does not delay 
 assert.equal(pieces[2].dataset.colorReady, 'true');
 assert.ok(requested.every(path => path.includes('desktop')), 'Portrait overlays must not download on desktop');
 buttons[0].focus();
+observeGeometry();
+assert.ok(frame, 'A selected popup repositions when the scene reflows');
+flushFrame();
 assert.equal(title.textContent, 'jaali', 'Story remains usable after image failure');
 assert.equal(announcement.textContent, 'jaali. Story: jaali', 'Persistent live region announces the selected story');
 assert.equal(panel.dataset.placement, 'above');
@@ -214,6 +223,8 @@ console.log('PASS: eight accessible controls, connected responsive artwork, dism
 
 assert.match(sceneMarkup, /data-landmark-announcement[^>]*aria-live="polite"/, 'Announcement region is always mounted');
 assert.ok(sceneMarkup.indexOf('class="liquid-hero-copy"') < sceneMarkup.indexOf('class="cityscape-hotspots"'), 'Headline link precedes landmarks in tab order');
+assert.ok(sceneMarkup.indexOf('class="liquid-hero-copy"') < sceneMarkup.indexOf('class="cityscape-viewport"'), 'Static DOM puts copy before artwork, with desktop overlap handled by CSS');
+assert.match(html, /data-cityscape data-expanded-copy="true"/, 'Static HTML gives the heading its own space before enhancement');
 const masterSources = [...new Set([...sceneMarkup.matchAll(/assets\/designs\/liquid-city-[^"\s]+\.webp/g)].map(match => match[0]))];
 assert.equal(masterSources.length, 2, 'Two registered masters serve both material states without extra overlay downloads');
 for (const path of masterSources) assert.ok(statSync(path).size < (path.includes('portrait') ? 800000 : 1500000), 'Hero image meets layout budget');

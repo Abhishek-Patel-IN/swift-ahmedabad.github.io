@@ -98,7 +98,7 @@ Layer order: master 0, atmosphere 1, color regions 2, river sheen 3, native butt
 
 `cityscape.mjs` owns one active landmark and input ownership. Mouse exit has 350ms grace to reach the popup. Latest deliberate mouse/keyboard/touch input wins. Touch toggles, outside tap/close/Escape dismiss, and offscreen exit clears selection. Close returns focus without reopening. Resize preserves keyboard/touch selection and changes responsive art/masks together.
 
-Desktop popup tries above/right/left/below while avoiding identity, navigation, selected target and viewport edges; the reserved slot is the fallback. Phones always use the slot. Text-only zoom moves oversized heading text above the city. Atmosphere drift is clamped to 12px; artwork/hotspots remain locked. Reduced motion makes reveals immediate and decorations still.
+Desktop popup tries above/right/left/below while avoiding identity, navigation, selected target and viewport edges; the reserved slot is the fallback. Phones always use the slot. The heading, description and meetup link layer over the sky on desktop, matching the published composition. CSS grid places text above the artwork's visual layers. Phones, oversized text and the original static HTML use a separate normal-flow row above the city. The fit check measures the shared multilingual word box and available stage height. Atmosphere drift is clamped to 12px; artwork/hotspots remain locked. Reduced motion makes reveals immediate and decorations still.
 
 A failed color layer keeps glass and story. A failed base shows the text landmark list. Optional source elements stay inert until the matching layout is chosen; the other layout does not download initially.
 
