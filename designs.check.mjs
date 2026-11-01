@@ -16,7 +16,7 @@ function element(dataset = {}) {
   };
 }
 // Deliberately omit retired worlds, chooser, comparison header, dock, tabs and slab.
-const ids = Object.fromEntries(['design-note', 'retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'speakers', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
+const ids = Object.fromEntries(['retry-content', 'main', 'liquid-top', 'liquid-city', 'liquid-story', 'liquid-join', ...['events', 'programs', 'app', 'team', 'speakers', 'sponsors', 'connect', 'contact'].map(name => `glass-${name}`)].map(id => [id, element()]));
 const profileParts = Object.fromEntries(['name', 'avatar', 'bio', 'link'].map(name => [`[data-profile-${name}]`, element()]));
 const dialog = ids['profile-dialog'] = {...element(), open: false, closest: () => null, querySelector: selector => profileParts[selector],
   showModal() { this.open = true; }, close() { this.open = false; this.events.close(); }};

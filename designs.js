@@ -38,8 +38,6 @@ function currentAnchor(hash) {
 
 function syncLiquidLocation() {
   document.body.dataset.design = 'glass';
-  const note = document.getElementById('design-note');
-  if (note) note.textContent = 'Swift Ahmedabad · Liquid Night';
   const url = new URL(location.href);
   url.searchParams.set('design', 'glass');
   url.hash = currentAnchor(url.hash);
