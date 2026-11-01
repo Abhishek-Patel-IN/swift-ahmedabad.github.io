@@ -358,12 +358,21 @@ function contentHTML(type, data, theme) {
   if (type === 'team' || type === 'speakers') {
     const members = type === 'speakers' ? data.speakers : data.members;
     const label = type === 'speakers' ? 'speakers' : 'team members';
-    const memberHTML = member => {
+    const memberHTML = (member, index) => {
       if (member.image && !/^assets\/speakers\/[\w.-]+\.(?:jpe?g|png)$/.test(member.image)) throw new Error('Unsupported profile image');
-      return `<article class="community-member"><span class="member-initials" aria-hidden="true">${text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''))}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span><div><h3>${text(member.name)}</h3><p class="bio-preview">${text(member.about)}</p><div class="profile-actions"><button type="button" data-read-bio aria-haspopup="dialog" aria-controls="profile-dialog" hidden>Read bio<span class="visually-hidden">: ${text(member.name)}</span></button>${contentLink(member.linkedIn, 'Connect on LinkedIn ↗', 'profile-link')}</div></div></article>`;
+      const speaker = type === 'speakers';
+      const initials = text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''));
+      const avatar = `<span class="member-initials" aria-hidden="true">${initials}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span>`;
+      const bio = `<p class="bio-preview">${text(member.about)}</p>`;
+      const action = `<button type="button" data-read-bio aria-haspopup="dialog" aria-controls="profile-dialog" hidden>${speaker ? 'See more' : 'Read bio'}<span class="visually-hidden">: ${text(member.name)}</span></button>`;
+      const previewID = `${theme}-speaker-preview-${index}`;
+      return `<article class="community-member"${speaker ? ' data-speaker-preview' : ''}>${speaker ? `<button type="button" class="speaker-photo-button" data-speaker-preview-toggle aria-label="Toggle bio preview for ${text(member.name)}" aria-controls="${previewID}" aria-expanded="false" aria-hidden="true" disabled>${avatar}<span class="speaker-bio-hint" hidden>Bio</span></button><span class="speaker-reflection" aria-hidden="true">${initials}${member.image ? `<img class="speaker-reflection-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span>` : avatar}<div><h3>${text(member.name)}</h3>${speaker ? `<div id="${previewID}" data-speaker-preview-content>${bio}<div class="profile-actions">${action}</div></div><div class="profile-actions">` : `${bio}<div class="profile-actions">${action}`}${contentLink(member.linkedIn, 'Connect on LinkedIn ↗', 'profile-link')}</div></div></article>`;
     };
-    return `${data.recencyUnavailable ? '<p class="content-footnote" role="status">Speaker recency is unavailable. Profiles are shown alphabetically; try loading content again.</p>' : ''}<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map(memberHTML).join('')}</div></details>`;
+    const recency = data.recencyUnavailable ? '<p class="content-footnote" role="status">Speaker recency is unavailable. Profiles are shown alphabetically; try loading content again.</p>' : '';
+    if (type === 'speakers') return `${recency}<div class="feature-gallery-heading speaker-gallery-heading"><p>Meet all ${members.length} speakers · Scroll to explore</p><div><button type="button" data-gallery-step="-1" aria-label="Previous speaker" aria-controls="${theme}-speaker-gallery">←</button><button type="button" data-gallery-step="1" aria-label="Next speaker" aria-controls="${theme}-speaker-gallery">→</button></div></div><div class="speaker-flow" data-gallery="speakers" id="${theme}-speaker-gallery" tabindex="0" role="region" aria-label="Speaker portraits; use arrow keys to browse">${members.map((member, index) => `<div class="speaker-slot">${memberHTML(member, index)}</div>`).join('')}</div>`;
+    return `<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map((member, index) => memberHTML(member, index + 4)).join('')}</div></details>`;
   }
+
   if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => contentLink(sponsor.url, `<strong>${text(sponsor.name)}</strong><span aria-hidden="true">↗</span>`, 'community-host')).join('')}</div>`;
   if (type === 'links') return `<div class="community-links">${data.links.map(link => contentLink(link.url, `<span class="connect-symbol" aria-hidden="true">${text({whatsapp:'W', luma:'↗', linkedin:'in', github:'⌘', instagram:'◎', twitter:'𝕏', discord:'D', aratt:'A', maps:'⌖'}[link.id] || '↗')}</span><div><h3>${text(link.name)}</h3><p>${text(link.description || 'Find us in Ahmedabad')}</p></div><b aria-hidden="true">↗</b>`, 'community-connect-link')).join('')}</div>`;
   if (type === 'contact') return `<div class="contact-list">${data.items.map(item => contentLink(item.email ? `mailto:${item.email}${item.id === 'sponsor' ? '?subject=Sponsorship%20offer%20for%20Swift%20Ahmedabad' : ''}` : item.url, `<h3>${text(item.title)}</h3><p>${text(item.description)}</p><span>${item.email ? text(item.email) : 'Submit your talk proposal'} <b aria-hidden="true">↗</b></span>`, `community-contact${item.id === 'sponsor' ? ' sponsor-mail-link' : ''}`)).join('')}</div>`;
@@ -374,10 +383,20 @@ function contentHTML(type, data, theme) {
 function galleryTarget(gallery, direction) {
   const maximum = Math.max(0, gallery.scrollWidth - gallery.clientWidth);
   const current = Math.max(0, Math.min(maximum, gallery.scrollLeft));
-  if (gallery.dataset.gallery !== 'cards') return Math.max(0, Math.min(maximum, current + direction * gallery.clientWidth));
+  if (!['cards', 'speakers'].includes(gallery.dataset.gallery)) return Math.max(0, Math.min(maximum, current + direction * gallery.clientWidth));
   const first = gallery.children[0]?.offsetLeft || 0;
   const positions = [...new Set([0, ...Array.from(gallery.children, card => Math.min(maximum, card.offsetLeft - first)), maximum])].sort((a, b) => a - b);
   return direction > 0 ? positions.find(position => position > current + 1) ?? maximum : positions.reverse().find(position => position < current - 1) ?? 0;
+}
+function updateSpeakerFlow(gallery) {
+  const center = gallery.scrollLeft + gallery.clientWidth / 2;
+  Array.from(gallery.children).forEach(card => {
+    const offset = (card.offsetLeft + card.offsetWidth / 2 - center) / Math.max(1, card.offsetWidth);
+    const portrait = card.firstElementChild;
+    portrait.style.setProperty('--speaker-turn', `${Math.max(-1, Math.min(1, offset)) * -52}deg`);
+    portrait.style.setProperty('--speaker-depth', `${-Math.min(3, Math.abs(offset)) * 100}px`);
+    portrait.style.setProperty('z-index', String(100 - Math.min(99, Math.round(Math.abs(offset) * 10))));
+  });
 }
 function updateGalleryControls(gallery) {
   const maximum = Math.max(0, gallery.scrollWidth - gallery.clientWidth);
@@ -387,57 +406,183 @@ function updateGalleryControls(gallery) {
     if (button.getAttribute('aria-disabled') !== disabled) button.setAttribute('aria-disabled', disabled);
   });
 }
+let speakerPreview = null, mouseSpeaker = null;
+let refreshBiographies = () => {};
+function closeSpeakerPreview(destination) {
+  const previous = speakerPreview;
+  speakerPreview = null;
+  if (!previous?.card.isConnected) return;
+  const region = previous.card.querySelector('[data-speaker-preview-content]');
+  const toggle = previous.card.querySelector('[data-speaker-preview-toggle]');
+  if (region.contains(document.activeElement)) (destination || toggle).focus({preventScroll: true});
+  region.setAttribute('aria-hidden', 'true');
+  toggle.setAttribute('aria-expanded', 'false');
+}
+function openSpeakerPreview(card, mode) {
+  if (!card.isConnected || !card.classList.contains('speaker-preview-ready') || profileDialog?.open) return;
+  if (speakerPreview?.card === card) return;
+  closeSpeakerPreview(card.querySelector('[data-speaker-preview-toggle]'));
+  speakerPreview = {card, mode};
+  card.querySelector('[data-speaker-preview-content]').setAttribute('aria-hidden', 'false');
+  card.querySelector('[data-speaker-preview-toggle]').setAttribute('aria-expanded', 'true');
+}
+function restoreProfile(card, failed = false) {
+  const region = card.querySelector('[data-speaker-preview-content]');
+  const toggle = card.querySelector('[data-speaker-preview-toggle]');
+  const action = card.querySelector('[data-read-bio]');
+  const heading = card.querySelector('h3');
+  if (document.activeElement === toggle || document.activeElement === action || region?.contains(document.activeElement)) {
+    heading.setAttribute('tabindex', '-1');
+    heading.focus({preventScroll: true});
+  }
+  if (speakerPreview?.card === card) closeSpeakerPreview(heading);
+  card.classList.remove('speaker-preview-ready');
+  card.classList.remove('bio-enabled');
+  region?.removeAttribute('aria-hidden');
+  if (action) action.hidden = true;
+  if (toggle) {
+    toggle.disabled = true;
+    toggle.setAttribute('aria-hidden', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+    const hint = toggle.querySelector('.speaker-bio-hint');
+    if (hint) hint.hidden = true;
+  }
+  if (failed) card.dataset.profileFallback = 'true';
+}
+function speakerClick(event) {
+  if (profileDialog?.open || profileDialog?.contains(event.target)) return;
+  const toggle = event.target.closest('[data-speaker-preview-toggle]');
+  if (toggle) {
+    if (toggle.disabled) return;
+    refreshBiographies();
+    if (toggle.disabled) return;
+    const card = toggle.closest('[data-speaker-preview]');
+    if (speakerPreview?.card === card) closeSpeakerPreview(toggle);
+    else openSpeakerPreview(card, 'activation');
+    return;
+  }
+  if (!speakerPreview || speakerPreview.card.contains(event.target)) return;
+  if (event.clientX >= document.documentElement.clientWidth || event.clientY >= document.documentElement.clientHeight) return;
+  const destination = event.target.closest('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]');
+  closeSpeakerPreview(destination);
+}
+function speakerFocus(target) {
+  if (speakerPreview?.mode === 'hover' && !profileDialog?.open && mouseSpeaker !== speakerPreview.card && !speakerPreview.card.contains(target)) closeSpeakerPreview();
+}
 let disposeContentUI = () => {};
 function initContentUI() {
   disposeContentUI();
   const cleanup = [];
+  disposeContentUI = () => {
+    disposeContentUI = () => {};
+    cleanup.splice(0).forEach(dispose => dispose());
+  };
   const galleries = [...document.querySelectorAll('[data-gallery]')];
-  const galleryResize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => galleries.forEach(updateGalleryControls));
+  const refreshGallery = gallery => { updateGalleryControls(gallery); if (gallery.dataset.gallery === 'speakers') updateSpeakerFlow(gallery); };
+  const galleryResize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => galleries.forEach(refreshGallery));
   galleries.forEach(gallery => {
-    const update = () => updateGalleryControls(gallery);
+    let frame = null;
+    const update = () => { if (frame === null) frame = requestAnimationFrame(() => { frame = null; refreshGallery(gallery); }); };
     gallery.addEventListener('scroll', update, {passive: true});
-    cleanup.push(() => gallery.removeEventListener('scroll', update));
+    window.addEventListener('resize', update);
+    const keyboard = event => {
+      if (event.target !== gallery || gallery.dataset.gallery !== 'speakers' || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const left = event.key === 'Home' ? 0 : event.key === 'End' ? gallery.scrollWidth - gallery.clientWidth : galleryTarget(gallery, event.key === 'ArrowRight' ? 1 : -1);
+      gallery.scrollBy({left: left - gallery.scrollLeft, behavior: reducedMotion.matches ? 'instant' : 'smooth'});
+    };
+    gallery.addEventListener('keydown', keyboard);
+    const focus = event => {
+      if (gallery.dataset.gallery !== 'speakers') return;
+      const slot = event.target.closest('.speaker-slot');
+      if (slot) gallery.scrollBy({left: slot.offsetLeft - gallery.firstElementChild.offsetLeft - gallery.scrollLeft, behavior: 'instant'});
+    };
+    gallery.addEventListener('focusin', focus);
+    cleanup.push(() => { gallery.removeEventListener('scroll', update); gallery.removeEventListener('keydown', keyboard); gallery.removeEventListener('focusin', focus); window.removeEventListener('resize', update); if (frame !== null) cancelAnimationFrame(frame); });
     galleryResize?.observe(gallery);
     if (gallery.firstElementChild) galleryResize?.observe(gallery.firstElementChild);
-    update();
+    refreshGallery(gallery);
   });
   cleanup.push(() => galleryResize?.disconnect());
   const dialog = document.getElementById('profile-dialog');
   if (dialog?.showModal) {
     const previews = [...document.querySelectorAll('.bio-preview')];
-    let frame = null, disposed = false;
+    const speakers = [...document.querySelectorAll('[data-speaker-preview]')];
+    const listeners = [];
+    let frame = null, disposed = false, resize;
     function syncPreviews() {
+      if (frame !== null) cancelAnimationFrame(frame);
       frame = null;
       if (disposed) return;
       previews.forEach(preview => {
-        if (!preview.clientWidth) return;
+        if (!preview.isConnected || !preview.clientWidth) return;
         const card = preview.closest('.community-member');
-        card.classList.add('bio-enabled');
-        const button = card.querySelector('[data-read-bio]');
-        if (button !== document.activeElement) button.hidden = preview.scrollHeight <= preview.clientHeight + 1;
+        if (card.dataset.profileFallback) return;
+        try {
+          const button = card.querySelector('[data-read-bio]');
+          card.classList.add('bio-enabled');
+          if (button !== document.activeElement && !(dialog.open && button === profileInvoker)) button.hidden = preview.scrollHeight <= preview.clientHeight + 1;
+          const toggle = card.querySelector('[data-speaker-preview-toggle]');
+          if (toggle && !card.classList.contains('speaker-preview-ready')) {
+            const region = card.querySelector('[data-speaker-preview-content]');
+            region.setAttribute('aria-hidden', 'true');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.querySelector('.speaker-bio-hint').hidden = false;
+            card.classList.add('speaker-preview-ready');
+            toggle.disabled = false;
+            toggle.removeAttribute('aria-hidden');
+          }
+        } catch (error) { restoreProfile(card, true); }
       });
     }
     const queue = () => { if (!disposed && frame === null) frame = requestAnimationFrame(syncPreviews); };
-    const resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(queue);
-    previews.forEach(preview => resize?.observe(preview));
-    document.addEventListener('toggle', queue, true);
-    document.addEventListener('focusout', queue);
-    window.addEventListener('resize', queue);
-    document.fonts?.addEventListener('loadingdone', queue);
-    document.fonts?.ready.then(queue);
-    syncPreviews();
-    cleanup.push(() => {
+    function disposeProfiles() {
+      if (disposed) return;
       disposed = true;
       if (frame !== null) cancelAnimationFrame(frame);
       resize?.disconnect();
+      listeners.splice(0).forEach(remove => remove());
       document.removeEventListener('toggle', queue, true);
       document.removeEventListener('focusout', queue);
       window.removeEventListener('resize', queue);
       document.fonts?.removeEventListener('loadingdone', queue);
-    });
+      if (refreshBiographies === syncPreviews) refreshBiographies = () => {};
+      mouseSpeaker = null;
+      speakers.filter(card => card.isConnected).forEach(card => restoreProfile(card));
+      speakerPreview = null;
+    }
+    cleanup.push(disposeProfiles);
+    try {
+      speakers.forEach(card => {
+        const enter = event => {
+          if (event.pointerType !== 'mouse' || !card.classList.contains('speaker-preview-ready')) return;
+          mouseSpeaker = card;
+          if (!speakerPreview || (speakerPreview.mode === 'hover' && !speakerPreview.card.contains(document.activeElement))) openSpeakerPreview(card, 'hover');
+        };
+        const leave = event => {
+          if (event.pointerType !== 'mouse') return;
+          if (mouseSpeaker === card) mouseSpeaker = null;
+          if (speakerPreview?.card === card && speakerPreview.mode === 'hover' && !profileDialog?.open && !card.contains(document.activeElement)) closeSpeakerPreview();
+        };
+        listeners.push(() => card.removeEventListener('pointerenter', enter), () => card.removeEventListener('pointerleave', leave));
+        card.addEventListener('pointerenter', enter);
+        card.addEventListener('pointerleave', leave);
+      });
+      resize = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(queue);
+      previews.forEach(preview => resize?.observe(preview));
+      document.addEventListener('toggle', queue, true);
+      document.addEventListener('focusout', queue);
+      window.addEventListener('resize', queue);
+      document.fonts?.addEventListener('loadingdone', queue);
+      document.fonts?.ready.then(queue);
+      refreshBiographies = syncPreviews;
+      syncPreviews();
+    } catch (error) {
+      disposeProfiles();
+    }
   }
-  disposeContentUI = () => cleanup.forEach(dispose => dispose());
 }
+
 const profileDialog = document.getElementById('profile-dialog');
 let profileInvoker, profileScroll = 0, backdropDown = false;
 function openProfile(button) {
@@ -455,7 +600,15 @@ function openProfile(button) {
   profileInvoker = button;
   profileScroll = window.scrollY;
   document.documentElement.classList.add('profile-open');
-  profileDialog.showModal();
+  try { profileDialog.showModal(); }
+  catch (error) {
+    document.documentElement.classList.remove('profile-open');
+    profileInvoker = undefined;
+    if (profileDialog.open) profileDialog.close();
+    restoreProfile(card, true);
+    window.scrollTo({top: profileScroll, behavior: 'instant'});
+    return;
+  }
   profileDialog.querySelector('[data-profile-name]').focus({preventScroll: true});
 }
 if (profileDialog?.showModal) {
@@ -477,6 +630,8 @@ if (profileDialog?.showModal) {
 }
 
 async function loadCommunityContent() {
+  if (profileDialog?.open) profileDialog.close();
+  disposeContentUI();
   const status = document.querySelector('.content-status');
   const retry = document.getElementById('retry-content');
   status.hidden = false;
@@ -543,7 +698,7 @@ async function loadCommunityContent() {
   scheduleMotion();
 }
 document.getElementById('retry-content').addEventListener('click', loadCommunityContent);
-document.addEventListener('error', event => { if (event.target?.matches?.('.profile-photo')) event.target.remove(); }, true);
+document.addEventListener('error', event => { if (event.target?.matches?.('.profile-photo,.speaker-reflection-photo')) event.target.remove(); }, true);
 document.addEventListener('click', event => {
   const step = event.target.closest('[data-story-step]');
   if (step && story?.dataset.pinned === 'true') {
@@ -552,6 +707,7 @@ document.addEventListener('click', event => {
   }
   const menuLink = event.target.closest('.section-menu a');
   if (sectionMenu?.open && (menuLink || !sectionMenu.contains(event.target))) sectionMenu.open = false;
+  speakerClick(event);
   const bio = event.target.closest('[data-read-bio]');
   if (bio) openProfile(bio);
   const button = event.target.closest('[data-gallery-step]');
@@ -560,11 +716,16 @@ document.addEventListener('click', event => {
   gallery.scrollBy({left: galleryTarget(gallery, Number(button.dataset.galleryStep)) - gallery.scrollLeft, behavior: reducedMotion.matches ? 'instant' : 'smooth'});
 });
 document.addEventListener('keydown', event => {
-  if (event.key !== 'Escape' || !sectionMenu?.open) return;
-  sectionMenu.open = false;
-  sectionMenu.querySelector('summary').focus();
+  if (event.key !== 'Escape' || profileDialog?.open) return;
+  if (sectionMenu?.open) {
+    sectionMenu.open = false;
+    sectionMenu.querySelector('summary').focus();
+  } else if (speakerPreview) {
+    event.preventDefault();
+    closeSpeakerPreview();
+  }
 });
-document.addEventListener('focusin', scheduleMotion);
+document.addEventListener('focusin', event => { scheduleMotion(); speakerFocus(event.target); });
 if (typeof ResizeObserver !== 'undefined' && storyPin) {
   const storyResize = new ResizeObserver(scheduleMotion);
   [storyPin, ...storyCards].forEach(node => storyResize.observe(node));

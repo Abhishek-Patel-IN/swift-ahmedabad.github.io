@@ -5,8 +5,8 @@ import { runInNewContext } from 'node:vm';
 
 function element(dataset = {}) {
   const values = {};
-  return { dataset, attributes: {}, events: {}, rect: {top: 0, bottom: 100, height: 100}, style: { values, setProperty(k, v) { values[k] = v; } },
-    classList: { values: {}, toggle(k, v) { this.values[k] = v; }, add(k) { this.values[k] = true; }, remove(k) { delete this.values[k]; } },
+  return { dataset, isConnected:true, disabled:false, attributes: {}, events: {}, rect: {top: 0, bottom: 100, height: 100}, style: { values, setProperty(k, v) { values[k] = v; } },
+    classList: { values: {}, toggle(k, v) { this.values[k] = v; }, add(k) { this.values[k] = true; }, remove(k) { delete this.values[k]; }, contains(k) { return !!this.values[k]; } },
     setAttribute(k, v) { this.attributes[k] = v; }, getAttribute(k) { return this.attributes[k]; }, removeAttribute(k) { delete this.attributes[k]; },
     contains(node) { return node != null && (this === node || this.link === node); },
     focus() { context.document.activeElement = this; },
@@ -242,9 +242,11 @@ assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTea
 for (const image of ['https://example.com/photo.png', 'data:image/png,test', 'assets/speakers/../photo.png', 'assets/speakers/photo.svg', 'assets/speakers/photo.png" onerror="alert(1)']) assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image}]}, 'glass'));
 const photoHTML = context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image: 'assets/speakers/RatneshJain.png'}]}, 'glass');
 assert.ok(photoHTML.includes('loading="lazy"') && photoHTML.includes('alt=""') && photoHTML.includes('&lt;script&gt;'));
-let failedPhotoRemoved = false;
-documentEvents.error({target: {matches: selector => selector === '.profile-photo', remove() { failedPhotoRemoved = true; }}});
-assert.equal(failedPhotoRemoved, true, 'A failed portrait reveals its initials');
+for (const kind of ['.profile-photo', '.speaker-reflection-photo']) {
+  let failedPhotoRemoved = false;
+  documentEvents.error({target: {matches: selector => selector.split(',').includes(kind), remove() { failedPhotoRemoved = true; }}});
+  assert.equal(failedPhotoRemoved, true, 'Failed portraits and reflections reveal their initials');
+}
 documentEvents.error({target: {}});
 failedRequest = 'team.json';
 await context.loadCommunityContent();
@@ -411,6 +413,267 @@ assert.match(activeHTML, /class="profile-dialog-body"[^>]+tabindex="0"[^>]+role=
 assert.match(activeHTML, /src="headline-glass\.mjs\?/);
 assert.ok(!/src="story-glass\.mjs/.test(activeHTML), 'Retired WebGL renderer stays inactive');
 assert.ok(!/<a\s[^>]*class="community-member"/.test(containers.speakers[0].innerHTML), 'Profile cards do not nest buttons in external links');
+// P2-014 drives the real delegates and lifecycle; native focus navigation is checked in browsers.
+function speakerCard(name, lines = 5) {
+  const fixture = {card:element(), heading:{...element(), textContent:name}, region:element(), photo:{...element(), disabled:true}, hint:{hidden:true},
+    bio:{...element(), clientWidth:220, clientHeight:81, scrollHeight:lines * 27, textContent:`${name} full biography.`}, action:{...element(), hidden:true}, link:element()};
+  const {card, heading, region, photo, hint, bio, action, link} = fixture;
+  const parts = {'h3':heading, '[data-speaker-preview-content]':region, '[data-speaker-preview-toggle]':photo,
+    '.bio-preview':bio, '[data-read-bio]':action, '.profile-link':link, '.member-initials':{cloneNode:()=>({avatar:name})}};
+  card.querySelector = selector => parts[selector] || null;
+  card.contains = node => node === card || Object.values(fixture).includes(node);
+  region.contains = node => node === region || node === bio || node === action;
+  photo.querySelector = selector => selector === '.speaker-bio-hint' ? hint : null;
+  link.href = 'https://example.com/profile';
+  Object.values(fixture).filter(node => node !== hint).forEach(node => {
+    node.closest = selector => {
+      if (selector === '.community-member' || selector === '[data-speaker-preview]') return card;
+      if (selector === '[data-speaker-preview-toggle]') return node === photo ? photo : null;
+      if (selector === '[data-read-bio]') return node === action ? action : null;
+      if (selector.startsWith('a[href],')) return [photo, action, link].includes(node) ? node : null;
+      return null;
+    };
+  });
+  return fixture;
+}
+const p14a = speakerCard('First speaker'), p14b = speakerCard('Second speaker'), p14short = speakerCard('Short speaker', 1);
+const p14fixtures = [p14a, p14b, p14short];
+extraQueryNodes['[data-speaker-preview]'] = p14fixtures.map(f => f.card);
+extraQueryNodes['.bio-preview'] = p14fixtures.map(f => f.bio);
+let p14frameID = 0;
+const p14frames = new Map();
+context.requestAnimationFrame = callback => { const id = ++p14frameID; p14frames.set(id, callback); return id; };
+context.cancelAnimationFrame = id => p14frames.delete(id);
+const p14flush = () => { const callbacks = [...p14frames.values()]; p14frames.clear(); callbacks.forEach(callback => callback()); };
+const p14click = target => documentEvents.click({target});
+const p14hover = (fixture, enter = true, pointerType = 'mouse') => fixture.card.events[enter ? 'pointerenter' : 'pointerleave']({pointerType});
+const p14expanded = fixture => fixture.photo.getAttribute('aria-expanded') === 'true';
+context.document.activeElement = null;
+context.initContentUI();
+assert.equal(p14a.photo.disabled, false);
+assert.equal(p14a.region.getAttribute('aria-hidden'), 'true');
+assert.equal(p14a.action.hidden, false);
+assert.equal(p14short.action.hidden, true, 'Short biographies have no redundant dialog action');
+p14hover(p14a);
+assert.equal(p14expanded(p14a), true);
+p14hover(p14a, false);
+assert.equal(p14expanded(p14a), false);
+p14hover(p14a);
+p14a.action.focus();
+p14hover(p14a, false);
+assert.equal(p14expanded(p14a), true, 'Pointer exit cannot hide a focused biography action');
+p14hover(p14b);
+assert.equal(p14expanded(p14b), false, 'Incidental hover cannot replace a focused preview');
+p14b.photo.focus();
+p14click(p14b.photo);
+assert.equal(p14expanded(p14a), false);
+assert.equal(p14expanded(p14b), true);
+assert.equal(context.document.activeElement, p14b.photo, 'Switching honors the new focus destination');
+p14hover(p14b, false);
+p14hover(p14a);
+assert.equal(p14expanded(p14b), true, 'Activated previews persist and take precedence over hover');
+assert.equal(p14expanded(p14a), false);
+p14click(p14b.photo);
+assert.equal(p14expanded(p14b), false);
+assert.equal(p14b.region.getAttribute('aria-hidden'), 'true');
+p14hover(p14b, false);
+p14hover(p14b);
+assert.equal(p14expanded(p14b), true, 'A fresh mouse entry may reopen a dismissed preview');
+p14click(p14b.photo);
+assert.equal(p14expanded(p14b), false, 'Activation toggles the currently reported expanded state');
+p14hover(p14a, true, 'touch');
+assert.equal(p14expanded(p14a), false);
+p14click(p14a.photo);
+assert.equal(p14expanded(p14a), true, 'One touch click opens once, without a focusin/touchstart toggle');
+p14a.action.focus();
+p14click(p14b.photo); // Safari can leave focus on the previous action after a mouse click.
+assert.equal(context.document.activeElement, p14b.photo, 'Switch focus before hiding the old focused action');
+const p14outside = {...element(), closest:()=>null};
+p14b.action.focus();
+p14click(p14outside);
+assert.equal(context.document.activeElement, p14b.photo, 'Nonfocusable outside content uses the old photo only as a fallback');
+p14click(p14a.photo);
+p14a.action.focus();
+p14click(p14b.link);
+assert.equal(context.document.activeElement, p14b.link, 'Outside control activation keeps its intended destination');
+p14click(p14a.photo);
+p14a.link.focus();
+p14click(p14outside);
+assert.equal(context.document.activeElement, p14a.link, 'Always-visible links never need focus restoration');
+context.document.activeElement = null;
+p14hover(p14a);
+p14a.action.focus();
+p14hover(p14a, false);
+p14b.link.focus();
+documentEvents.focusin({target:p14b.link});
+assert.equal(p14expanded(p14a), false, 'A hover preview closes after both pointer and focus leave');
+
+p14click(p14a.photo);
+p14a.action.focus();
+p14click(p14a.action);
+assert.equal(dialog.open, true);
+assert.equal(p14expanded(p14a), true);
+p14hover(p14a, false);
+p14a.bio.scrollHeight = 81;
+windowEvents.resize();
+p14flush();
+assert.equal(p14a.action.hidden, false, 'A resized dialog invoker remains available for focus restoration');
+documentEvents.keydown({key:'Escape'});
+assert.equal(p14expanded(p14a), true, 'The dialog owns Escape before the preview');
+dialog.close();
+assert.equal(context.document.activeElement, p14a.action);
+const p14dialogTarget = {...element(), closest:()=>null};
+dialog.contains = node => node === dialog || node === p14dialogTarget;
+p14click(p14dialogTarget);
+assert.equal(p14expanded(p14a), true, 'A dialog close click cannot fall through to outside dismissal');
+let p14prevented = false;
+documentEvents.keydown({key:'Escape', preventDefault(){p14prevented=true;}});
+assert.equal(p14prevented, true);
+assert.equal(p14expanded(p14a), false);
+assert.equal(context.document.activeElement, p14a.photo);
+p14a.bio.scrollHeight = 135;
+
+// Hidden directory cards wait for valid geometry; font/resize/disclosure callbacks share the same measurement.
+p14b.bio.clientWidth = 0;
+context.initContentUI();
+assert.equal(p14b.photo.disabled, true);
+p14b.bio.clientWidth = 220;
+documentEvents.toggle();
+p14flush();
+assert.equal(p14b.photo.disabled, false);
+const p14oldQueue = documentEvents.toggle;
+context.initContentUI();
+const p14pending = p14frames.size;
+p14oldQueue();
+assert.equal(p14frames.size, p14pending, 'Disposed callbacks cannot schedule stale measurements');
+p14a.card.isConnected = p14a.bio.isConnected = false;
+const p14oldEnter = p14a.card.events.pointerenter;
+runInNewContext('disposeContentUI()', context);
+p14oldEnter({pointerType:'mouse'});
+assert.equal(p14expanded(p14a), false, 'Detached cards cannot be opened by stale events');
+p14a.card.isConnected = p14a.bio.isConnected = true;
+runInNewContext('disposeContentUI()', context); // Idempotent.
+context.initContentUI();
+assert.equal(p14a.photo.disabled, false);
+
+const p14set = p14b.region.setAttribute;
+let p14fail = true;
+p14b.region.setAttribute = function(...args) { if(p14fail){p14fail=false;throw new Error('setup failure');} return p14set.apply(this,args); };
+context.initContentUI();
+assert.equal(p14b.photo.disabled, true);
+assert.equal(p14b.card.classList.contains('bio-enabled'), false);
+assert.equal(p14b.region.getAttribute('aria-hidden'), undefined, 'Partial setup restores accessible full text');
+p14b.region.setAttribute = p14set;
+
+const p14showModal = dialog.showModal;
+dialog.showModal = () => {throw new Error('native dialog refused');};
+p14click(p14a.photo);
+p14a.action.focus();
+p14click(p14a.action);
+assert.equal(root.classList.contains('profile-open'), false, 'Failed native dialog opening cannot leave scrolling locked');
+assert.equal(p14a.card.classList.contains('bio-enabled'), false);
+assert.equal(p14a.photo.disabled, true);
+assert.equal(p14a.action.hidden, true);
+assert.equal(context.document.activeElement, p14a.heading);
+assert.equal(p14a.region.getAttribute('aria-hidden'), undefined);
+dialog.showModal = undefined;
+context.initContentUI();
+assert.ok(p14fixtures.every(f => f.photo.disabled), 'Unavailable dialog leaves readable, noninteractive profiles');
+dialog.showModal = p14showModal;
+runInNewContext('disposeContentUI()', context);
+// Observer setup failure and uncancellable font promises use the existing disposal guard.
+const p14observed = speakerCard('Observed speaker');
+extraQueryNodes['[data-speaker-preview]'] = [p14observed.card];
+extraQueryNodes['.bio-preview'] = [p14observed.bio];
+const p14observers = [], p14fontReady = [];
+let p14observeFailure = false;
+context.ResizeObserver = class {
+  constructor(callback) { this.callback=callback; p14observers.push(this); }
+  observe(node) { if(p14observeFailure && node===p14observed.bio) throw new Error('observer setup failure'); }
+  disconnect() { this.disconnected=true; }
+};
+const p14fontEvents = {};
+context.document.fonts = {ready:{then(callback){p14fontReady.push(callback);}},
+  addEventListener(type,callback){p14fontEvents[type]=callback;}, removeEventListener(type,callback){if(p14fontEvents[type]===callback) delete p14fontEvents[type];}};
+context.initContentUI();
+assert.equal(p14observed.photo.disabled, false);
+p14fontEvents.loadingdone();
+const p14lateFrames = [...p14frames.values()];
+runInNewContext('disposeContentUI()', context);
+const p14afterDispose = p14frames.size;
+p14lateFrames.forEach(callback=>callback());
+p14fontReady.forEach(callback=>callback());
+p14observers.forEach(observer=>observer.callback());
+assert.equal(p14frames.size, p14afterDispose, 'Late font/observer/frame callbacks stay disposed');
+assert.ok(p14observers.every(observer=>observer.disconnected));
+p14observeFailure = true;
+context.initContentUI();
+assert.equal(p14observed.photo.disabled, true);
+assert.equal(p14observed.card.classList.contains('bio-enabled'), false);
+assert.equal(p14observed.region.getAttribute('aria-hidden'), undefined);
+assert.equal(p14observed.card.events.pointerenter, undefined, 'Partial setup removes already attached listeners');
+runInNewContext('disposeContentUI()', context);
+delete context.ResizeObserver;
+delete context.document.fonts;
+const p14crew = speakerCard('Crew fallback');
+const p14crewQuery = p14crew.card.querySelector;
+p14crew.card.querySelector = selector => selector.startsWith('[data-speaker-preview') ? null : p14crewQuery(selector);
+p14crew.card.classList.add('bio-enabled');
+p14crew.action.focus();
+dialog.showModal = () => {throw new Error('crew dialog refused');};
+context.openProfile(p14crew.action);
+assert.equal(p14crew.card.classList.contains('bio-enabled'), false, 'The shared dialog owner restores full crew text on failure too');
+assert.equal(context.document.activeElement, p14crew.heading);
+dialog.showModal = p14showModal;
+delete extraQueryNodes['[data-speaker-preview]'];
+delete extraQueryNodes['.bio-preview'];
+const p14markup = containers.speakers[0].innerHTML;
+const p14ids = [...p14markup.matchAll(/id="(glass-speaker-preview-\d+)"/g)].map(match => match[1]);
+assert.equal(p14ids.length, 30);
+assert.equal(new Set(p14ids).size, 30, 'Initially visible and expanded-directory controls use unique IDs');
+assert.equal((p14markup.match(/data-speaker-preview-toggle/g) || []).length, 30);
+assert.ok(p14markup.includes('See more') && p14markup.includes('disabled'));
+assert.ok(!containers.team[0].innerHTML.includes('data-speaker-preview'), 'Crew keeps its original disclosure behavior');
+console.log('PASS: speaker hover/touch/click precedence, focus-safe switching, dialog ownership/fallback, intrinsic overflow and lifecycle cleanup');
+// Scroll anchors stay untransformed so a visual update cannot skip snap points.
+const flow = {...element({gallery:'speakers'}), id:'glass-speaker-gallery', clientWidth:1140, scrollWidth:1800, scrollLeft:0};
+flow.children = [400,620,840,1060].map(offsetLeft => ({offsetLeft,offsetWidth:340,firstElementChild:element()}));
+flow.firstElementChild = flow.children[0];
+context.updateSpeakerFlow(flow);
+assert.equal(Number.parseFloat(flow.children[0].firstElementChild.style.values['--speaker-turn']), 0, 'First speaker starts front-facing and centered');
+assert.ok(Number.parseFloat(flow.children[1].firstElementChild.style.values['--speaker-turn']) < 0);
+assert.equal(context.galleryTarget(flow, 1), 220);
+flow.scrollLeft = 220;
+context.updateSpeakerFlow(flow);
+assert.ok(Number.parseFloat(flow.children[0].firstElementChild.style.values['--speaker-turn']) > 0);
+assert.equal(Number.parseFloat(flow.children[1].firstElementChild.style.values['--speaker-depth']), 0);
+assert.equal(context.galleryTarget(flow, 1), 440, 'One arrow means one speaker, independent of transforms');
+assert.equal(context.galleryTarget(flow, -1), 0);
+extraQueryNodes['[data-gallery]'] = [flow];
+context.initContentUI();
+let flowPrevented = false;
+flow.events.keydown({target:flow,key:'End',preventDefault(){flowPrevented=true;}});
+assert.equal(flowPrevented, true);
+assert.equal(flow.scrollOptions.left, 440);
+flow.events.keydown({target:flow,key:'Home',preventDefault(){}});
+assert.equal(flow.scrollOptions.left, -220);
+flow.scrollOptions = null;
+flow.events.keydown({target:flow.children[0],key:'ArrowRight'});
+assert.equal(flow.scrollOptions, null, 'Card controls retain their own keyboard behavior');
+flow.events.focusin({target:{closest:()=>flow.children[2]}});
+assert.equal(flow.scrollOptions.left, 220, 'Tabbing into a speaker centers its full card');
+flow.events.scroll();
+assert.ok(p14frames.size > 0);
+delete extraQueryNodes['[data-gallery]'];
+context.initContentUI();
+assert.equal(flow.events.scroll, undefined);
+assert.equal(flow.events.keydown, undefined);
+assert.equal(flow.events.focusin, undefined);
+assert.equal(p14frames.size, 0, 'Retries cancel pending gallery frames');
+assert.equal((p14markup.match(/class="speaker-slot"/g) || []).length, 30);
+assert.equal((p14markup.match(/class="speaker-reflection" aria-hidden="true"/g) || []).length, 30);
+assert.ok(!p14markup.includes('team-directory'), 'All speakers share one native row');
+console.log('PASS: speaker cover-flow transforms, stable snap anchors, keyboard endpoints, focus centering and cleanup');
 console.log('PASS: homepage, chronology/provenance/local dates, bio dialog/overflow/focus, card/page gallery navigation/bounds, content safety, retries and preserved story/navigation');
 
 // Run the actual title initializer against its production markup and a controlled clock.
