@@ -350,7 +350,7 @@ assert.ok(!/data-stat=|data-year|data-content="stats"|class="liquid-impact"/.tes
 assert.deepEqual([...activeHTML.matchAll(/id="world-([^"]+)"/g)].map(match => match[1]), ['glass']);
 assert.ok(!/data-choice|class="comparison"|id="studio-fill"/.test(activeHTML));
 assert.ok(!/assets\/designs\/(?:studio|city-of-swift|aurora)/.test(activeHTML));
-assert.ok(activeHTML.indexOf('id="glass-events"') < activeHTML.indexOf('id="liquid-story"'), 'Events precede optional storytelling');
+assert.deepEqual([...activeHTML.matchAll(/<section\b[^>]*\bid="([^"]+)"/g)].slice(0, 5).map(match => match[1]), ['liquid-top', 'liquid-city', 'liquid-story', 'glass-events', 'glass-programs'], 'City hero is followed by the story, event archive and existing programs');
 assert.match(activeHTML, /class="liquid-button" href="https:\/\/lu.ma\/user\/swiftahmedabad"[^>]*data-link="luma">Find your next meetup/, 'Hero CTA goes directly to the calendar');
 // Verified chronology stays local, uses Ahmedabad dates, and never mutates profiles.
 const speakers = source('speakers').speakers, events = source('events').events;
