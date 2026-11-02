@@ -1,6 +1,7 @@
 // Run with: node designs.check.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { runInNewContext } from 'node:vm';
 
 function element(dataset = {}) {
@@ -236,6 +237,21 @@ assert.ok(containers.contact[0].innerHTML.includes('helloswiftahmedabad@gmail.co
 assert.ok(containers.connect[0].innerHTML.includes('discord.gg'));
 assert.ok(containers.sponsors[0].innerHTML.includes('Space-O Technologies'));
 assert.ok(!containers.sponsors[0].innerHTML.includes('host-number'), 'Sponsors need names, not serial numbers');
+const sponsorData = source('sponsors').sponsors;
+assert.equal(sponsorData.filter(item => item.logo).length, 10, 'All ten hosts have official local artwork');
+assert.equal((containers.sponsors[0].innerHTML.match(/class="sponsor-logo"/g) || []).length, 10);
+assert.ok(!sponsorData.at(-1).logo && sponsorData.at(-1).url.startsWith('mailto:'), 'The invitation remains a text email link');
+for (const item of sponsorData.filter(item => item.logo)) {
+  assert.ok(item.logoSource.startsWith('https://'), 'Retain exact official asset provenance');
+  assert.equal(createHash('sha256').update(readFileSync(new URL(`./${item.logo}`, import.meta.url))).digest('hex'), item.logoSha256, `${item.name} retains the collected original artwork`);
+}
+const sponsorWithLogo = {name: '<Simform>', url: 'https://www.simform.com/', logo: 'assets/sponsors/simform.svg'};
+const logoHTML = context.contentHTML('sponsors', {subtitle: '', sponsors: [sponsorWithLogo]}, 'glass');
+assert.ok(logoHTML.includes('src="assets/sponsors/simform.svg"') && logoHTML.includes('alt=""') && logoHTML.includes('loading="lazy"'), 'Sponsor logos load locally without duplicating the visible link name');
+assert.ok(logoHTML.includes('&lt;Simform&gt;') && logoHTML.includes('href="https://www.simform.com/"'), 'Logos retain escaped names and company links');
+const textSponsorHTML = context.contentHTML('sponsors', {subtitle: '', sponsors: [{...sponsorWithLogo, logo: undefined}]}, 'glass');
+assert.ok(!textSponsorHTML.includes('<img') && textSponsorHTML.includes('&lt;Simform&gt;'), 'Missing logos retain working text links');
+for (const logo of ['https://example.com/logo.svg', 'data:image/png,test', 'assets/sponsors/../logo.svg', 'assets/sponsors/logo.svg" onerror="alert(1)']) assert.throws(() => context.contentHTML('sponsors', {subtitle: '', sponsors: [{...sponsorWithLogo, logo}]}, 'glass'));
 assert.equal((containers.programs[0].innerHTML.match(/class="community-program"/g) || []).length, source('programs').programs.length);
 assert.equal(description.textContent, source('links').community.description);
 assert.ok(communityLinks.every(link => link.href));
@@ -253,10 +269,10 @@ assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTea
 for (const image of ['https://example.com/photo.png', 'data:image/png,test', 'assets/speakers/../photo.png', 'assets/speakers/photo.svg', 'assets/speakers/photo.png" onerror="alert(1)']) assert.throws(() => context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image}]}, 'glass'));
 const photoHTML = context.contentHTML('speakers', {speakers: [{...maliciousTeam.members[0], image: 'assets/speakers/RatneshJain.png'}]}, 'glass');
 assert.ok(photoHTML.includes('loading="lazy"') && photoHTML.includes('alt=""') && photoHTML.includes('&lt;script&gt;'));
-for (const kind of ['.profile-photo', '.speaker-reflection-photo']) {
+for (const kind of ['.profile-photo', '.speaker-reflection-photo', '.sponsor-logo']) {
   let failedPhotoRemoved = false;
   documentEvents.error({target: {matches: selector => selector.split(',').includes(kind), remove() { failedPhotoRemoved = true; }}});
-  assert.equal(failedPhotoRemoved, true, 'Failed portraits and reflections reveal their initials');
+  assert.equal(failedPhotoRemoved, true, 'Failed images are removed while names and links remain');
 }
 documentEvents.error({target: {}});
 failedRequest = 'team.json';

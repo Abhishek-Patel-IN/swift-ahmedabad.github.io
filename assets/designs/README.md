@@ -227,7 +227,7 @@ The active Liquid Night page uses these local content sources:
 - `programs.json`: program names, descriptions, statuses, and destinations.
 - `team.json`: the complete team directory and LinkedIn profiles.
 - `speakers.json`: 30 Ahmedabad speaker profiles in a separate section, with pinned Talks source URLs. Names and two recovered YAML links follow the user's confirmations; biographies reflect event submissions. Source-verified portraits live in `assets/speakers/`, with `imageSource` and `imageSha` provenance in each photo record. Original bytes are preserved; photos load lazily and failed images reveal initials. Gokul remains initials-only. The user confirmed the Nishchal Visavadiya, Tushar Thakar and Riddhi Khunti filename-spelling mappings; 29 speakers have approved portraits. Future unclear identity mappings require confirmation before use.
-- `sponsors.json`: past hosts and the invitation to host.
+- `sponsors.json`: past hosts and the invitation to host. Optional `logo`, `logoSource` and `logoSha256` fields retain local original artwork, its exact official source URL and SHA256 checksum; see [Sponsor logos](#sponsor-logos).
 - `app.json`: app identity, App Store/TestFlight destinations, and all 14 feature screenshots.
 - `contact.json` and `sponsorship-email.json`: speaker submissions, email contacts, and the existing sponsorship email draft.
 - `events.json`: curated published event history, with direct source links. This is an editable archive, not a live Luma API feed. New events should be added here; the upcoming-event links always go to the community's Luma calendar.
@@ -235,6 +235,14 @@ The active Liquid Night page uses these local content sources:
 The 2025 annual impact/statistics blocks are removed from both active pages. `stats.json` retains the historical Talks report values for reference, but neither page fetches or displays them. The report alone does not provide attendance records that independently validate participant totals or averages. Restore statistics only with supporting records.
 
 Shared files also feed the homepage, whose speaker and team tabs remain separate. Serve the site over HTTP; content files are fetched from the same origin. Verify with `node designs.check.mjs` and `node navigation.check.mjs`; inspect both pages after shared profile changes.
+
+## Sponsor logos
+
+The November 2 local P2-004 preview adds official artwork for all ten existing companies, without changing their names, order or destinations. Seven SVGs and three PNGs in `assets/sponsors/` are unchanged downloads referenced by the companies' own websites, including their linked CDNs. Pixster's original 1024px touch icon matches its inline header mark; no downloadable wordmark was available there. The source URLs and SHA256 checksums live with each record in `sponsors.json`. SVGs were checked for scripts, event handlers and external resources before inclusion.
+
+Homepage cards keep the existing three-column desktop / one-column phone grid, with an 88px white logo panel above each visible company name. Full artwork is contained, without cropping or recoloring; PNGs use `scale-down` to avoid enlarging eClinicalWorks' small original. Images are lazy-loaded with empty alternative text because the adjacent name labels the same link. The existing captured image-error handler removes failed artwork, retaining readable text links. Only safe relative `assets/sponsors/` paths are accepted. The invitation has no logo. The retained bento renderer continues showing its existing text cards and ignores these optional fields.
+
+Run `node designs.check.mjs` for local paths, source checksums, escaped names, destinations, missing artwork and failed-image fallback. `node navigation.check.mjs` covers the retained consumer. Desktop and 390/320px HTTP review passed for this preview. The user approved the sponsor logos on November 2 and requested committing them and updating the logs. Publication remains separate.
 
 ## Interactive Liquid Night cityscape
 
