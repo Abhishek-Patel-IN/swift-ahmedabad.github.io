@@ -15,7 +15,7 @@ async function loadContent() {
     try {
         const [linksResponse, appResponse] = await Promise.all([
             fetch('links.json'),
-            fetch('app.json')
+            fetch('app.json', {cache: 'no-cache'})
         ]);
         
         const linksData = await linksResponse.json();
@@ -45,7 +45,11 @@ async function loadContent() {
         document.getElementById('app-tagline').textContent = appData.app.tagline;
         document.getElementById('app-description').textContent = appData.app.description;
         document.getElementById('testflight-btn').href = appData.app.testFlightUrl;
-        document.getElementById('app-icon').src = appData.app.icon;
+        for (const id of ['app-icon', 'support-app-icon']) {
+            const icon = document.getElementById(id);
+            icon.src = appData.app.icon;
+            icon.alt = `${appData.app.name} app icon`;
+        }
         
     } catch (error) {
         console.error('Error loading content:', error);

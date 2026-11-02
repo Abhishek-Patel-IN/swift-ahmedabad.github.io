@@ -232,6 +232,20 @@ assert.ok(containers.speakers[0].innerHTML.includes('Meet all 30 speakers'));
 assert.ok(containers.team[0].innerHTML.includes('Meet all 20 team members'));
 assert.ok(containers.speakers[0].innerHTML.includes('Dharmesh Avaiya') && !containers.team[0].innerHTML.includes('Dharmesh Avaiya'));
 assert.equal((containers.app[0].innerHTML.match(/class="app-feature"/g) || []).length, source('app').features.length);
+const appData = source('app');
+assert.equal(appData.app.name, 'Community Talks');
+assert.equal(appData.app.appStoreUrl, 'https://apps.apple.com/us/app/swifttalks/id6755958142');
+assert.equal(appData.app.testFlightUrl, 'https://testflight.apple.com/join/Mt4fZYTp');
+assert.equal(appData.features.length, 19, 'Replace the old gallery with all nineteen supplied screenshots');
+assert.equal(new Set(appData.features.map(feature => feature.id)).size, 19, 'Feature deep links stay unique');
+assert.deepEqual(appData.features.map(feature => feature.image), [...Array.from({length: 13}, (_, i) => i + 4104), ...Array.from({length: 6}, (_, i) => i + 4118)].map(number => `assets/CommunityTalksAssets/IMG_${number}.jpg`), 'Every supplied screenshot appears once in the approved order');
+for (const image of [appData.app.icon, ...appData.features.map(feature => feature.image)]) {
+  assert.match(image, /^assets\/CommunityTalksAssets\/[\w-]+\.(?:png|jpg)$/);
+  assert.ok(readFileSync(new URL(`./${image}`, import.meta.url)).length > 0, 'App artwork resolves locally');
+}
+assert.ok(containers.app[0].innerHTML.includes('Community Talks app icon'));
+assert.ok(containers.app[0].innerHTML.includes('Home &amp; Spotlights in Community Talks'));
+assert.ok(!containers.app[0].innerHTML.includes('SwiftTalksAssets/'), 'Old screenshots leave the active gallery');
 assert.equal((containers.events[0].innerHTML.match(/class="event-entry"/g) || []).length, source('events').events.length);
 assert.ok(containers.contact[0].innerHTML.includes('helloswiftahmedabad@gmail.com'));
 assert.ok(containers.connect[0].innerHTML.includes('discord.gg'));
@@ -349,6 +363,12 @@ assert.equal(menu.open, false, 'Following a menu link closes the menu');
 
 // Check parsed source, so retained theme comments do not count as active DOM.
 const activeHTML = readFileSync(new URL('./index.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+assert.equal((containers.connect[0].innerHTML.match(/<svg class="connect-symbol"/g) || []).length, source('links').links.length, 'Every Connect card uses a vector logo or location icon');
+for (const link of source('links').links) {
+  assert.ok(activeHTML.includes(`<symbol id="connect-${link.icon}"`), `${link.name} has an actual icon definition`);
+  assert.ok(containers.connect[0].innerHTML.includes(`href="#connect-${link.icon}"`));
+  assert.ok(containers.connect[0].innerHTML.includes(`href="${context.escapeHTML(link.url)}"`), 'Icon changes preserve the authored destination');
+}
 assert.match(activeHTML, /src="designs\.js\?[^\"]+"/, 'The homepage loads the Liquid Night renderer');
 const legacyHTML = readFileSync(new URL('./designs.html', import.meta.url), 'utf8');
 assert.match(legacyHTML, /http-equiv="refresh" content="0;url=\.\/"/, 'Legacy design URL has a native redirect fallback');

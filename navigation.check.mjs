@@ -121,7 +121,7 @@ assert.equal(peopleContainers['team-container'].innerHTML, teamHTML);
 failSpeakers = false;
 await context.loadSpeakers();
 assert.ok(peopleContainers['speakers-container'].innerHTML.includes('Dharmesh Avaiya'));
-const contentNodes = Object.fromEntries(['community-name', 'community-description', 'community-logo', 'navbar-logo-img', 'hero-cta-primary', 'hero-cta-secondary', 'links-container', 'app-name', 'app-tagline', 'app-description', 'testflight-btn', 'app-icon'].map(id => [id, {}]));
+const contentNodes = Object.fromEntries(['community-name', 'community-description', 'community-logo', 'navbar-logo-img', 'hero-cta-primary', 'hero-cta-secondary', 'links-container', 'app-name', 'app-tagline', 'app-description', 'testflight-btn', 'app-icon', 'support-app-icon', 'app-features-container'].map(id => [id, {}]));
 document.getElementById = id => contentNodes[id];
 const contentRequests = [];
 context.fetch = async path => {
@@ -132,6 +132,19 @@ context.fetch = async path => {
 await context.loadContent();
 assert.ok(!contentRequests.includes('stats.json'), 'Homepage content is independent of annual totals');
 assert.equal(contentNodes['community-name'].textContent, 'Swift Ahmedabad');
-assert.equal(contentNodes['app-name'].textContent, 'Talks');
+assert.equal(contentNodes['app-name'].textContent, 'Community Talks');
+const appData = JSON.parse(readFileSync(new URL('./app.json', import.meta.url), 'utf8'));
+for (const id of ['app-icon', 'support-app-icon']) {
+    assert.equal(contentNodes[id].src, appData.app.icon, 'App and support use the same current logo');
+    assert.equal(contentNodes[id].alt, 'Community Talks app icon');
+}
+assert.equal(contentNodes['testflight-btn'].href, 'https://testflight.apple.com/join/Mt4fZYTp');
+runInNewContext(readFileSync(new URL('./swift-talks.js', import.meta.url), 'utf8'), context);
+await context.loadAppFeatures();
+assert.equal((contentNodes['app-features-container'].innerHTML.match(/class="feature-card-plain"/g) || []).length, 19);
+for (const feature of appData.features) {
+    assert.ok(contentNodes['app-features-container'].innerHTML.includes(`data-feature-id="${feature.id}"`));
+    assert.ok(contentNodes['app-features-container'].innerHTML.includes(`src="${feature.image}"`));
+}
 assert.ok(contentNodes['links-container'].innerHTML.includes('https://github.com/'));
 console.log('PASS: homepage routing, speakers/team separation, source decisions, safe profile text/URLs, failed loads, menus and keyboard focus');
