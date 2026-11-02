@@ -165,7 +165,7 @@ const observeCityTitle = initCityTitle();
 function scrollToStoryStep(index, behavior = 'instant') {
   const top = navigation?.offsetHeight || 0;
   const rect = story.getBoundingClientRect();
-  const travel = rect.height - (innerHeight - top);
+  const travel = rect.height - storyPin.clientHeight;
   window.scrollTo({top: window.scrollY + rect.top - top + travel * (index + .5) / storyCards.length, behavior});
   scheduleMotion();
 }
@@ -175,12 +175,12 @@ function updateStoryMotion(top) {
   let pinned = !reducedMotion.matches && innerWidth >= 900 && innerHeight - top >= 600;
   story.dataset.pinned = String(pinned);
   // Text zoom or taller translated copy must never be clipped into a pinned stage.
-  if (pinned && storyPin.scrollHeight > innerHeight - top + 1) {
+  if (pinned && storyPin.scrollHeight > storyPin.clientHeight + 1) {
     pinned = false;
     story.dataset.pinned = 'false';
   }
   const rect = story.getBoundingClientRect();
-  const travel = rect.height - (innerHeight - top);
+  const travel = rect.height - storyPin.clientHeight;
   const progress = pinned && travel > 0 ? Math.max(0, Math.min(1, (top - rect.top) / travel)) : 0;
   let active = Math.min(storyCards.length - 1, Math.floor(progress * storyCards.length));
   // Keep a focused chapter link available until focus leaves it.

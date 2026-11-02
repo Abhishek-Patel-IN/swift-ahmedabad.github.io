@@ -1116,8 +1116,8 @@ body{background:#060a15}
 /* Enhancement starts only after JS confirms the complete stage fits. */
 .story-controls{display:none}
 @media screen and (min-width:900px) and (prefers-reduced-motion:no-preference){
- .liquid-story[data-pinned=true]{height:calc(280vh - var(--nav-height));padding:0}
- [data-pinned=true] .story-pin{position:sticky;top:var(--nav-height);height:calc(100vh - var(--nav-height));padding:32px clamp(32px,5vw,80px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto;gap:24px 6%;align-items:center}
+ .liquid-story[data-pinned=true]{--story-stage-height:min(600px,calc(100vh - var(--nav-height)));height:calc(180vh + var(--story-stage-height));padding:0}
+ [data-pinned=true] .story-pin{position:sticky;top:var(--nav-height);height:var(--story-stage-height);padding:32px clamp(32px,5vw,80px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:1fr auto;gap:24px 6%;align-items:center}
  [data-pinned=true] .story-intro{width:100%;text-align:left;padding:0}
  [data-pinned=true] .story-intro h2{font-size:clamp(38px,4.2vw,64px)}
  [data-pinned=true] .story-intro .liquid-kicker{max-width:34ch;line-height:1.8}

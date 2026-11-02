@@ -22,7 +22,7 @@ const dialog = ids['profile-dialog'] = {...element(), open: false, closest: () =
   showModal() { this.open = true; }, close() { this.open = false; this.events.close(); }};
 const extraQueryNodes = {};
 const story = element();
-const storyPin = {...element(), scrollHeight: 560};
+const storyPin = {...element(), clientHeight: 600, scrollHeight: 560};
 const cityScene = element();
 const storyCards = Array.from({length: 3}, () => element());
 const storySteps = Array.from({length: 3}, (_, index) => element({storyStep: String(index)}));
@@ -129,7 +129,7 @@ motionPreference.matches = false;
 context.updateMotion();
 assert.equal(story.dataset.pinned, 'true');
 const setStoryProgress = progress => {
-  story.rect = {height: 1800, top: navigation.offsetHeight - progress * (1800 - (context.innerHeight - navigation.offsetHeight))};
+  story.rect = {height: 1800, top: navigation.offsetHeight - progress * (1800 - storyPin.clientHeight)};
   context.updateMotion();
 };
 for (const [progress, expected] of [[-.2, 0], [0, 0], [.32, 0], [.34, 1], [.5, 1], [.67, 2], [1, 2], [1.2, 2], [.5, 1], [0, 0]]) {
@@ -186,16 +186,16 @@ const chapterTarget = {closest: selector => selector === '[data-story-step]' ? s
 documentEvents.click({target: chapterTarget});
 assert.equal(context.document.activeElement, storySteps[1], 'Chapter control owns focus before changing scenes');
 assert.equal(context.window.scrolled.behavior, 'smooth', 'Chapter buttons scrub through intermediate states using native smooth scrolling');
-assert.equal(context.window.scrolled.top, context.window.scrollY + story.rect.top - navigation.offsetHeight + (1800 - (context.innerHeight - navigation.offsetHeight)) * .5);
+assert.equal(context.window.scrolled.top, context.window.scrollY + story.rect.top - navigation.offsetHeight + (1800 - storyPin.clientHeight) * .5);
 visit('#story-belong');
 context.scrollToCurrentAnchor();
 assert.equal(context.window.scrolled.behavior, 'instant', 'Direct chapter hashes land without an animated detour');
 assert.ok(context.window.scrolled.top > context.window.scrollY + story.rect.top - navigation.offsetHeight);
 visit('');
-for (const fallback of ['mobile', 'short', 'overflow', 'reduced']) {
+for (const fallback of ['mobile', 'short', 'overflow', 'stage-overflow', 'reduced']) {
   context.innerWidth = fallback === 'mobile' ? 390 : 1280;
   context.innerHeight = fallback === 'short' ? 600 : 900;
-  storyPin.scrollHeight = fallback === 'overflow' ? 1200 : 560;
+  storyPin.scrollHeight = fallback === 'overflow' ? 1200 : fallback === 'stage-overflow' ? 700 : 560;
   motionPreference.matches = fallback === 'reduced';
   context.updateMotion();
   assert.equal(story.dataset.pinned, 'false', `${fallback} uses ordinary flow`);
