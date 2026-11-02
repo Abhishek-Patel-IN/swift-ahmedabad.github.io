@@ -1171,6 +1171,23 @@ html.profile-open{overflow:hidden}
 .speaker-preview-ready [data-speaker-preview-content][aria-hidden=true]{visibility:hidden}
 @media(max-width:767px){.speaker-preview-ready{gap:20px}}
 @media print{.speaker-preview-ready [data-speaker-preview-content]{visibility:visible!important}.speaker-bio-hint{display:none}}
+/* Crew badges: cobalt holders and paper inserts, using the existing directory. */
+.liquid-world .community-team .community-member{padding:11px;gap:0;border:1px solid #7397ff;border-radius:25px;background:linear-gradient(120deg,#5783ff,#2455df 18%,#123ab7 78%,#4877ef);box-shadow:inset 0 0 0 3px #98b7ff26,inset 0 2px 3px #d4e1ff88,0 12px 28px #0003}
+.liquid-world .crew-badge-paper{display:flex;flex-direction:column;flex:1;min-width:0;padding:24px 18px 14px;border:1px solid #c7ceda;border-radius:14px;background:radial-gradient(#2639570a .6px,transparent .6px) 0 0/5px 5px,#f3f3ed;color:#202838;box-shadow:0 1px 5px #071a6e80,inset 0 1px 2px #fff}
+.liquid-world .crew-badge-brand{display:flex;align-items:center;gap:8px;margin:0 0 26px;color:#354253}
+.crew-badge-brand svg{width:31px;height:31px;flex-shrink:0;fill:currentColor}
+.crew-badge-brand>span{font-size:17px;line-height:.95;font-weight:800;letter-spacing:-.7px}
+.crew-badge-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.liquid-world .community-team .member-initials{width:58px;height:72px;border:1px solid #b8c2cf;border-radius:5px;background:linear-gradient(145deg,#e0e5e7,#d0d9e0);color:#47596b;font-size:20px;letter-spacing:-.5px}
+.liquid-world .community-team .community-member h3{margin:0;color:#202838;font-size:1.25rem;line-height:1.15;font-weight:650;letter-spacing:-.6px;overflow-wrap:anywhere}
+.liquid-world .crew-badge-label{margin:19px 0 10px;color:#3f4f70;font-size:.6875rem;line-height:1.5;font-weight:650;letter-spacing:.12em;text-transform:uppercase}
+.liquid-world .community-team .community-member p{margin-bottom:16px;color:#4b5565;font-size:.8125rem;line-height:1.65}
+.crew-badge-paper .profile-actions{border-top:1px dashed #b8c2cf;padding-top:7px}
+.crew-badge-paper .profile-actions a,.crew-badge-paper .profile-actions button{color:#1947b5}
+.crew-badge-paper a:focus-visible,.crew-badge-paper button:focus-visible{outline-color:#1744b3;outline-offset:3px;border-radius:2px}
+.community-team .team-directory>summary{min-height:44px}
+@media(max-width:767px){.liquid-world .community-team .community-member{flex-direction:column;max-width:380px;width:100%;justify-self:center}.liquid-world .crew-badge-paper{padding:24px 22px 14px}.liquid-world .crew-badge-brand{margin-bottom:28px}.liquid-world .community-team .community-member h3{font-size:1.5rem}.liquid-world .community-team .member-initials{width:68px;height:82px;font-size:24px}}
+@media(forced-colors:active){.liquid-world .community-team .community-member,.liquid-world .crew-badge-paper{background:Canvas;color:CanvasText;border-color:CanvasText;box-shadow:none}.liquid-world .crew-badge-brand,.liquid-world .crew-badge-label,.liquid-world .community-team .community-member h3,.liquid-world .community-team .community-member p,.liquid-world .community-team .member-initials{color:CanvasText;background:Canvas}.crew-badge-paper .profile-actions a,.crew-badge-paper .profile-actions button{color:LinkText}.crew-badge-paper a:focus-visible,.crew-badge-paper button:focus-visible{outline-color:Highlight}}
 /* Speaker cover flow: native scrolling owns navigation; transforms add depth. */
 .speaker-gallery-heading{margin-top:0;margin-bottom:8px}
 .speaker-flow{--speaker-size:clamp(280px,30vw,380px);position:relative;display:flex;align-items:flex-start;gap:20px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#cab4f766 transparent;margin-inline:calc(-1 * var(--section-gutter));padding:28px max(20px,calc((100% - var(--speaker-size)) / 2 + var(--section-gutter))) 125px}

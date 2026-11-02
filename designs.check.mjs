@@ -214,6 +214,17 @@ assert.equal((containers.team[0].innerHTML.match(/class="community-member"/g) ||
 assert.equal((containers.speakers[0].innerHTML.match(/class="community-member"/g) || []).length, source('speakers').speakers.length);
 assert.equal((containers.speakers[0].innerHTML.match(/class="profile-photo"/g) || []).length, source('speakers').speakers.filter(speaker => speaker.image).length);
 assert.ok(!containers.team[0].innerHTML.includes('profile-photo'), 'Team cards keep their initials');
+const crewMarkup = containers.team[0].innerHTML;
+assert.equal((crewMarkup.match(/class="crew-badge-paper"/g) || []).length, source('team').members.length, 'Every crew member gets a badge');
+assert.ok(!containers.speakers[0].innerHTML.includes('crew-badge'), 'Badges belong only to crew');
+const crewPreview = crewMarkup.split('<details class="team-directory">');
+assert.equal(crewPreview.length, 2, 'Crew keeps its native expanded directory');
+assert.equal((crewPreview[0].match(/class="community-member"/g) || []).length, 4, 'Four badges remain visible before disclosure');
+assert.deepEqual([...crewMarkup.matchAll(/<h3>(.*?)<\/h3>/g)].map(match => match[1]), source('team').members.map(member => context.escapeHTML(member.name)), 'Crew order and names stay intact');
+for (const member of source('team').members) {
+  assert.ok(crewMarkup.includes(context.escapeHTML(member.about)), 'Badge retains the authored biography');
+  assert.ok(crewMarkup.includes(`href="${context.escapeHTML(member.linkedIn)}" target="_blank" rel="noopener noreferrer"`), 'Badge retains a safe LinkedIn destination');
+}
 const gokulHTML = context.contentHTML('speakers', {speakers: [source('speakers').speakers.find(speaker => speaker.name === 'Gokul Nair')]}, 'glass');
 assert.ok(gokulHTML.includes('GN</span>') && !gokulHTML.includes('profile-photo'), 'Gokul remains initials-only');
 assert.ok(containers.speakers[0].innerHTML.includes('Meet all 30 speakers'));
