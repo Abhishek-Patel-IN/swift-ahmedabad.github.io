@@ -6,7 +6,7 @@ Initial workflow confirmed October 31, 2026: collect feedback in this file and h
 
 ## Implementation workflow
 
-- November 3, 2026: User requested “commit everything & publish everything.” This authorizes committing the remaining feedback/prototype source files and publishing the complete current implementation to the existing feedback Site. Earlier item-specific publication deferrals are superseded for this release. Unresolved feedback remains pending; this request does not supply missing requirements or assets. The retired glass prototype stays inactive. This feedback file is now intended for Git tracking; the four excluded root working documents remain local.
+- November 3, 2026: User requested “commit everything & publish everything.” This authorizes committing the remaining feedback/prototype source files and publishing the complete current implementation to the existing feedback Site. Earlier item-specific publication deferrals are superseded for this release. Unresolved feedback remains pending; this request does not supply missing requirements or assets. The retired glass prototype stays inactive. This feedback file was tracked in commit `8ff6748`; the four excluded root working documents remain local.
 
 - Continue recording feedback here, grouped by reviewer/source with sequential IDs. Implement only confirmed scope, one selected item at a time, while unrelated pending questions/assets wait.
 - Use this chat for feedback collection and a separate local chat for the selected implementation. Only one implementation chat should edit this checkout at a time. Re-read shared notes before writing and preserve concurrent additions.
@@ -241,7 +241,7 @@ Follow-up evidence: R2-S6 was supplied and visually reviewed during the yellow-i
 - Final-row reference follow-up: User supplied the 9:04:31 PM screenshot and requested its final-footer treatment. The last row now centers the full existing sentence “Swift Ahmedabad is an independent, community-run group. Apple and Swift are trademarks of Apple Inc.” on a full-width muted strip. The upper identity is simply “Swift Ahmedabad,” avoiding repeated independence wording. This supersedes the earlier single-background, left-aligned trademark row.
 - Approval November 1, 2026: User accepted the final preview (“perfect”) and explicitly requested logging, committing the footer changes and publishing to the same feedback link. This authorizes this footer release, not subsequent feedback items.
 - Validation: The earlier consolidation passed homepage/syntax/whitespace checks and HTTP review at 1114, 768, 390 and 320px, including utility destinations, 44px links and keyboard focus. After the final-row change, homepage/whitespace checks passed again; HTTP review at 1114, 390 and 320px confirmed centered edge-to-edge strip, final-row placement, one footer and no document horizontal overflow or captured warnings/errors. Disclaimer contrast is 4.60:1. Physical-device and spoken screen-reader checks were not performed.
-- Pending: Optional future personal-site link. Replacement app-logo/screenshot files were supplied November 2; their implementation is approved and committed in `a1f88b7` (`P2-021`), with publication deferred. The badge reference is not automatically an app logo.
+- Pending: Optional future personal-site link. Replacement app-logo/screenshot files were supplied November 2; their implementation is approved and committed in `a1f88b7` (`P2-021`), then published in version 11 on November 3. The badge reference is not automatically an app logo.
 - Boundary: The old chat's “raat ko” is not a current deadline or instruction to make edits now. Reference footer contact information and other people's credits are not approved content for this site.
 
 - Publication November 1, 2026: User-approved footer released to the same public feedback link as version 8, from original commit `c56e865` and Sites source commit `32c515c`. All four release checks passed in both checkouts; all 107 packaged runtime files matched approved source bytes. Live desktop review confirmed one footer, plain credit, correct utility links, centered final strip, original-link redirect and no document horizontal overflow or captured warnings/errors. No fresh phone/device/screen-reader review; earlier local coverage remains applicable.
@@ -270,7 +270,7 @@ Follow-up evidence: R2-S6 was supplied and visually reviewed during the yellow-i
 | R2-Q1 | P2-008 | Resolved October 31, 2026: source question only; no replacement request. Local files, recorded Luma provenance and the image/date selection logic have been verified. |
 | R2-Q2 | P2-010–P2-015 | Speaker composition and biography interactions approved and published under P2-012–P2-014. Separate blue-framed team badges approved, committed (`47fd2c6`) and published as version 9 November 2, 2026 under P2-011; any future portraits/assets remain pending. |
 | R2-Q3 | P2-016 | Resolved October 31, 2026: fixed “Swift”; `Ahmedabad` → `અમદાવાદ` → `अहमदाबाद` every 5 seconds while title is visible; soft fade, stable heading position, pause control and static reduced-motion mode. User approved the reviewed implementation and published version 6 on November 1. |
-| R2-Q4 | P2-017, P2-021 | Scope/source resolved by November 1, 2026: plain “Built by Abhishek Patel” footer credit approved, committed and published in version 8; personal-site link deferred while that website is under development. Talks → **Community Talks**, with updated app logo and screenshots to be supplied by the user. Profile URLs recorded in `P2-020`; app files were supplied November 2 and P2-021 is approved and committed in `a1f88b7`; publication is deferred. |
+| R2-Q4 | P2-017, P2-021 | Scope/source resolved by November 1, 2026: plain “Built by Abhishek Patel” footer credit approved, committed and published in version 8; personal-site link deferred while that website is under development. Talks → **Community Talks**, with updated app logo and screenshots to be supplied by the user. Profile URLs recorded in `P2-020`; app files were supplied November 2 and P2-021 is approved and committed in `a1f88b7`, then published in version 11 on November 3. |
 | R2-Q5 | P2-018 | Partially resolved November 1, 2026: blue-framed Swift Ahmedabad badge is the team-design reference for now. Calendar purpose/website relevance remains pending; user will ask Reviewer 2 for details. |
 | R2-Q6 | R2-V1 | Resolved November 1, 2026: user confirmed the video was just a visual reference. No additional spoken-feedback requirements remain pending; no audio transcription is claimed. |
 
@@ -316,7 +316,7 @@ Follow-up evidence: R2-S6 was supplied and visually reviewed during the yellow-i
 
 ### P2-021 — Update Talks app branding to Community Talks
 
-- Status: Approved and committed November 2, 2026 in `a1f88b7`; publication explicitly deferred by the user.
+- Status: Approved and committed November 2, 2026 in `a1f88b7`; published as feedback version 11 on November 3, 2026.
 - Section: App showcase and app branding.
 - Source: Direct user clarification of Reviewer 2's name/logo request (`P2-017`).
 - Feedback: The app previously called **Talks** is now named **Community Talks**. Its logo and App Store screenshots have also changed; the website should reflect the current app identity and assets.
@@ -326,41 +326,56 @@ Follow-up evidence: R2-S6 was supplied and visually reviewed during the yellow-i
 - Implementation: Community Talks name/logo in shared data and app-facing labels; 19 captioned screenshots in approved filename order; 750×1624 JPEG web copies and a 360×360 alpha PNG logo (3,882,883 bytes total). App/support icons share the configured logo. Native cache revalidation resolves observed old JSON reuse. Preserved gallery interactions and existing download URLs/version metadata; adjusted narrow-phone heading fit and tablet navigation duplication.
 - Validation: All four active Node checks, script syntax and whitespace passed. HTTP browser review confirmed all 19 loaded screenshots, gallery bounds/progression and keyboard button use, desktop/tablet/390/320px layout fit, both retained icons, 19 retained cards and a visible speaker-directory deep link. No captured warnings/errors or document overflow.
 - Approval November 2, 2026: User accepted the app and Connect preview (“Perfect”) and requested committing both updates and updating the logs, explicitly without publishing. Commit `a1f88b7143aacc56a7249129dec056317b1ecb9d` (`feat: refresh Community Talks and Connect logos`) contains the 30 reviewed code, artwork, check and design-note files. Local working documents and feedback notes remain uncommitted.
-- Pending: Publication remains deferred. No physical-device, spoken screen-reader, fresh 200% zoom or Safari review. App Store external verification remained unavailable; destination preservation is explicitly user-confirmed.
+- Verification limits: No physical-device, spoken screen-reader, fresh 200% zoom or Safari review. App Store external verification remained unavailable; destination preservation is explicitly user-confirmed.
 - Relationship: App branding is separate from Abhishek's footer credit (`P2-017`), crew profile (`P2-020`) and the earlier event-image logo-consistency suggestion (`P2-019`). Do not treat those as the same logo update.
+- Publication November 3, 2026: Included in full feedback version 11 at the existing public Site under the user’s publish-everything request. See the full release record below.
 
 
 ## User follow-up — received November 2, 2026
 
 ### P2-022 — Homepage section order
 
-- Status: Approved and committed November 2, 2026 in `24d773c`; publication remains separate.
+- Status: Approved and committed November 2, 2026 in `24d773c`; published as feedback version 11 on November 3, 2026.
 - Source: Direct user request with screenshots `Screenshot 2026-11-02 at 9.29.30 PM.heic` and `Screenshot 2026-11-02 at 9.29.41 PM.heic`. Both screenshots were visually inspected. The user explicitly confirmed the proposed order after clarification; screenshot order alone was not treated as a requirement.
 - Confirmed scope: City hero first, then the complete Learn / Build / Belong story (“One connection…”), then the event archive (“Good things we’ve shared…”). Swap only the two existing sections; preserve subsequent sections and current content/behavior.
 - Implementation: Moved the existing event section after the story in `index.html`, preserving document reading order, IDs, navigation and all nonblank markup content. Updated the existing homepage regression check to require the confirmed opening sequence. No stylesheet, JavaScript, JSON, dependency or asset changes.
 - Validation: New order check failed against the previous order, then the full homepage check passed after the move. Cityscape check and whitespace passed. HTTP browser review at 1114px confirmed chapter progression and release into events, and the Events link cleared navigation. At 390/320px, the story retained its normal-flow fallback followed by events, with no document overflow. The mobile chapter deep link worked. No captured warnings/errors. Screenshots: `section-order-desktop.jpg` and `section-order-phone.jpg` in this chat’s visualization folder.
 - Approval November 2, 2026: User accepted the preview (“perfect”) and requested committing it and updating the logs. Commit `24d773ca1289ea30404cf71f54c657e14421dd20` (`feat: move story before event archive`) contains the approved homepage, existing regression check and design notes. Local feedback and root working documents remain separate.
-- Pending: No publication requested or performed for this reorder; sponsor-only version 10 retains the published section order. No new physical-device, zoom, reduced-motion browser or spoken screen-reader checks were performed.
+- Verification limits: No fresh physical-device, zoom, reduced-motion browser or spoken screen-reader checks for this release; earlier interaction evidence remains applicable.
+- Publication November 3, 2026: Included in full feedback version 11 at the existing public Site under the user’s publish-everything request. See the full release record below.
 
 
 ### P2-023 — Reduce space above and below story cards
 
-- Status: Approved and committed November 2, 2026 in `bebca95`; publication remains separate.
+- Status: Approved and committed November 2, 2026 in `bebca95`; published as feedback version 11 on November 3, 2026.
 - Source: Direct user request after discussion of `Screenshot 2026-11-02 at 9.33.27 PM.heic`. The screenshot was visually inspected; its arrows identify spacing above the cards and between cards and chapter controls.
 - Confirmed scope: Reduce those gaps while keeping the Learn / Build / Belong animation the same, and show a preview.
 - Implementation: Cap the visible desktop stage at 600px. Preserve the existing 1.8 viewport heights of scroll travel, chapter holds, fade/copy handoff, movement/scale, smooth buttons, deep links and focus behavior. Progress, button destinations and overflow fallback now measure the actual stage height. Phone, short-window and reduced-motion layouts retain ordinary flow. The committed hero/story/events order remains in place.
 - Validation: Homepage regression check failed against the old viewport-based geometry, then passed after the change, including 101 forward/reverse samples, controls, focus and a new case where content fits the viewport but exceeds the compact stage. Cityscape, closing-headline, JavaScript syntax and whitespace checks passed. At 1114x1224, gaps changed from 336px above / 328px below to 57px / 49px; scroll travel stayed 2203.1875px. Browser review also covered 1440x900 and 900x700 pinned layouts, 900x650 fallback, 390/320px phones, Build/Belong destinations, reverse-scroll blending and the event boundary. No document overflow or captured warnings/errors. Screenshots: `story-spacing-desktop.jpg`, `story-spacing-transition.jpg` and `story-spacing-phone.jpg` in this chat's visualization folder.
 - Follow-up browser validation: A settled reverse-scroll round trip returned to scroll position 1950px, progress 0.5003 and identical opacity/copy-opacity/movement/scale values for all three cards.
 - Approval November 2, 2026: After viewing the running local site, user accepted it (“perfect”) and requested committing the story spacing changes and updating the logs. Commit `bebca95173ab3667d50d137c82ec002e3f1edb89` (`fix: reduce story spacing without changing motion`) contains the five reviewed implementation/check/design-note files. Local feedback and root working documents remain separate.
-- Pending: No publication requested or performed for this spacing change; sponsor-only version 10 retains the published story spacing. Physical-device, 200% zoom, reduced-motion browser and spoken screen-reader checks were not performed; reduced-motion and stage-overflow fallbacks passed the simulated check.
+- Verification limits: No fresh physical-device, 200% zoom, reduced-motion browser or spoken screen-reader checks; earlier simulated motion/fallback proof remains applicable.
+- Publication November 3, 2026: Included in full feedback version 11 at the existing public Site under the user’s publish-everything request. See the full release record below.
 
 
 ### P2-024 — Replace Connect-card placeholder logos
 
-- Status: Approved and committed November 2, 2026 in `a1f88b7` with P2-021; publication explicitly deferred by the user.
+- Status: Approved and committed November 2, 2026 in `a1f88b7` with P2-021; published as feedback version 11 on November 3, 2026.
 - Source: Direct user request “update these logos also” with `Screenshot 2026-11-02 at 10.42.46 PM.heic`. Visually inspected the supplied screenshot; it shows the nine Connect cards, not app screenshots or sponsor artwork.
 - Confirmed scope: Replace placeholder letters/symbols with recognizable service logos and a location pin. On clarification, user explicitly selected Zoho Arattai for the existing Aratt.ai card. Link labels/destinations and layout remain unchanged.
 - Implementation: Native inline SVG symbols reuse existing X/LinkedIn/GitHub/WhatsApp/Instagram/Discord geometry, plus Luma's official star, confirmed official Arattai geometry/colors, and a location pin. Logos are decorative; visible service names remain the link labels. No dependency or new runtime external requests.
 - Validation: Focused regression failed with placeholders, then passed after replacement. All four active Node checks and syntax/whitespace passed. Desktop and 390/320px HTTP review confirmed nine visible icons, preserved destinations, and no card/document overflow or captured warnings/errors. Physical-device, spoken screen-reader, fresh zoom and Safari checks were not performed.
 - Approval November 2, 2026: User accepted the combined preview and requested the local commit. Included in `a1f88b7143aacc56a7249129dec056317b1ecb9d` with P2-021. All four active Node checks and syntax passed on the exact staged snapshot; no fresh browser review for this commit-only follow-up.
-- Next: Await further instructions; do not publish until requested.
+- Next: None for the current implementation; later changes follow the sequential review workflow.
+- Publication November 3, 2026: Included in full feedback version 11 at the existing public Site under the user’s publish-everything request. See the full release record below.
+
+
+
+## Full release — November 3, 2026
+
+- User request: “commit everything & publish everything.” Committed the remaining feedback notes, inactive prototype and packaging clarification as `8ff6748112a0ef9813cf2a0da1b604144392e227`. Root working documents remain excluded; unresolved feedback remains pending. The retired prototype remains inactive and is excluded from the public runtime.
+- Published version: **11**, saved version `appgprj_6addbb564fa081918b5908006dbf5949~appgver_9648dce456288191a0d22f8f7c48dac2`, pushed Sites source `69fe3b638507512c6be9aa74ac644a3ffe5cf357`, deployment `appgdep_6ae96174fd208191a9c4ebe8e8cde188`. Native status is **succeeded** at `2026-11-03T04:24:34.906131+00:00`. Existing public audience and [feedback URL](https://swift-ahmedabad-feedback.abhishek-patel-ai-wo.chatgpt.site) are preserved.
+- Scope: The complete current implementation, including the approved story reorder (`P2-022`), compact story spacing (`P2-023`), Community Talks logo/all 19 screenshots (`P2-021`), Connect logos (`P2-024`) and all previously published sponsor/team/speaker/footer/title changes.
+- Validation: All four active Node checks plus the retained prototype check passed in both original and Sites checkouts. All **137 public runtime files** match the committed original and pushed Sites source byte-for-byte; archive also carries one hosting manifest (138 files in the saved version). Packaged local HTTP review passed. Live desktop and 390/320px review confirmed the app identity, all 19 loaded screenshots, nine Connect marks, ten sponsor logos, correct opening section order, 600px desktop story stage, preserved download URLs and no document overflow or captured warnings/errors. The original feedback link redirects correctly.
+- Recovery: Initial deployment call timed out after the server created the deployment. Read the saved version’s returned deployment ID and confirmed success; no duplicate deployment was requested.
+- Evidence: `full-release-live-v11.png` and `full-release-live-v11-phone.png` in this chat’s visualization folder. No new physical-device, spoken screen-reader, zoom or Safari review.
