@@ -80,6 +80,8 @@ context.console = { error() {} };
 context.fetch = async path => ({ ok: !failSpeakers || path !== 'speakers.json', json: async () => JSON.parse(readFileSync(new URL(`./${path}`, import.meta.url), 'utf8')) });
 await context.loadTeamMembers();
 const teamHTML = peopleContainers['team-container'].innerHTML;
+assert.ok(teamHTML.includes('Abhishek Patel') && teamHTML.includes('Senior iOS developer'));
+assert.ok(teamHTML.includes('href="https://abhishek-patel-in.github.io/"'), 'Retained crew supports the supplied personal website');
 await context.loadSpeakers();
 const speakers = JSON.parse(readFileSync(new URL('./speakers.json', import.meta.url), 'utf8')).speakers;
 const portraits = speakers.filter(speaker => speaker.image);
@@ -106,6 +108,12 @@ assert.ok(profileHTML.includes('&lt;script&gt;') && profileHTML.includes('&lt;im
 assert.ok(!profileHTML.includes('<script>') && !profileHTML.includes('<img'));
 for (const linkedIn of ['javascript:alert(1)', 'data:text/html,test', 'http://example.com', '']) assert.throws(() => context.createMemberCard({ ...maliciousProfile, linkedIn }));
 assert.throws(() => context.createMemberCard({ ...maliciousProfile, about: '' }));
+for (const profileUrl of ['https://github.com/example', 'https://twitter.com/example', 'https://example.com/']) {
+    assert.ok(context.createMemberCard({ ...maliciousProfile, linkedIn: undefined, profileUrl }).includes(`href="${profileUrl}"`));
+}
+for (const profileUrl of ['javascript:alert(1)', 'http://example.com', 'mailto:test@example.com', '', null]) {
+    assert.throws(() => context.createMemberCard({ ...maliciousProfile, linkedIn: undefined, profileUrl }));
+}
 const photoHTML = context.createMemberCard({ ...maliciousProfile, image: 'assets/speakers/RatneshJain.png' });
 assert.ok(photoHTML.includes('class="profile-photo"') && photoHTML.includes('loading="lazy"') && photoHTML.includes('alt=""'));
 assert.ok(photoHTML.includes('class="team-initial"'), 'Initials remain beneath the photo as fallback');

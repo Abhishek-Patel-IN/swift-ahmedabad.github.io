@@ -11,8 +11,9 @@ async function loadTeamMembers() {
 }
 
 function createMemberCard(member) {
-    if (![member.name, member.about, member.linkedIn].every(value => typeof value === 'string' && value.trim())) throw new Error('Incomplete profile');
-    const url = new URL(member.linkedIn);
+    const destination = member.profileUrl ?? member.linkedIn;
+    if (![member.name, member.about, destination].every(value => typeof value === 'string' && value.trim())) throw new Error('Incomplete profile');
+    const url = new URL(destination);
     if (url.protocol !== 'https:') throw new Error('Unsupported profile URL');
     if (member.image && !/^assets\/speakers\/[\w.-]+\.(?:jpe?g|png)$/.test(member.image)) throw new Error('Unsupported profile image');
     const text = value => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
@@ -25,6 +26,7 @@ function createMemberCard(member) {
             </div>
             <div class="team-info">
                 <h2>${text(member.name)}</h2>
+                ${member.role ? `<p>${text(member.role)}</p>` : ''}
                 <p>${text(member.about)}</p>
             </div>
         </a>

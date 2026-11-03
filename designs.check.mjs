@@ -48,6 +48,9 @@ const documentEvents = {};
 const motionPreference = {matches: false, events: {}, addEventListener(type, callback) { this.events[type] = callback; }};
 let failedRequest = '', eventOverride, speakerOverride;
 const requested = [];
+let crewRandomCalls = 0;
+const pageMath = Object.create(Math);
+pageMath.random = () => (crewRandomCalls++ * 7 % 23) / 23;
 const source = type => JSON.parse(readFileSync(new URL(`./${type}.json`, import.meta.url), 'utf8'));
 const location = {};
 function visit(path) {
@@ -57,7 +60,7 @@ function visit(path) {
 visit('?design=unknown#old');
 let lastURL;
 const context = {
-  URL, URLSearchParams, location,
+  URL, URLSearchParams, location, Math: pageMath,
   fetch: async path => { requested.push(path); return {ok: path !== failedRequest, json: async () => path === 'speakers.json' && speakerOverride ? speakerOverride : path === 'events.json' && eventOverride ? eventOverride : source(path.replace('.json', ''))}; },
   document: {
     body, documentElement: root,
@@ -221,15 +224,40 @@ assert.ok(!containers.speakers[0].innerHTML.includes('crew-badge'), 'Badges belo
 const crewPreview = crewMarkup.split('<details class="team-directory">');
 assert.equal(crewPreview.length, 2, 'Crew keeps its native expanded directory');
 assert.equal((crewPreview[0].match(/class="community-member"/g) || []).length, 4, 'Four badges remain visible before disclosure');
-assert.deepEqual([...crewMarkup.matchAll(/<h3>(.*?)<\/h3>/g)].map(match => match[1]), source('team').members.map(member => context.escapeHTML(member.name)), 'Crew order and names stay intact');
+const crewNames = markup => [...markup.matchAll(/<h3>(.*?)<\/h3>/g)].map(match => match[1]);
+const teamMembers = source('team').members;
+assert.deepEqual(crewNames(crewPreview[0]), teamMembers.slice(0, 4).map(member => context.escapeHTML(member.name)), 'Four preview badges keep their fixed order');
+assert.deepEqual(crewNames(crewPreview[1]).sort(), teamMembers.slice(4).map(member => context.escapeHTML(member.name)).sort(), 'Expanded directory contains everyone else exactly once');
+assert.notDeepEqual(crewNames(crewPreview[1]), teamMembers.slice(4).map(member => context.escapeHTML(member.name)), 'Expanded crew order follows page randomness');
+const randomCallsAfterCrew = crewRandomCalls;
+const freshTeam = source('team');
+const freshTeamBytes = JSON.stringify(freshTeam);
+assert.equal(context.contentHTML('team', freshTeam, 'glass'), crewMarkup, 'Re-rendering fresh JSON retains this page’s crew order');
+assert.equal(crewRandomCalls, randomCallsAfterCrew, 'Each member receives one random position per page');
+assert.equal(JSON.stringify(freshTeam), freshTeamBytes, 'Presentation does not rewrite source order');
 for (const member of source('team').members) {
   assert.ok(crewMarkup.includes(context.escapeHTML(member.about)), 'Badge retains the authored biography');
-  assert.ok(crewMarkup.includes(`href="${context.escapeHTML(member.linkedIn)}" target="_blank" rel="noopener noreferrer"`), 'Badge retains a safe LinkedIn destination');
+  assert.ok(crewMarkup.includes(`href="${context.escapeHTML(member.profileUrl ?? member.linkedIn)}" target="_blank" rel="noopener noreferrer"`), 'Badge retains its one safe profile destination');
+}
+const abhishek = teamMembers.find(member => member.name === 'Abhishek Patel');
+assert.equal(abhishek.role, 'Senior iOS developer');
+assert.equal(abhishek.about, 'Senior iOS developer with experience building macOS and Flutter apps. Enjoys R&D, product design, experimenting with AI and creating skills for AI agents. Works on the Swift Ahmedabad website and open source projects.');
+assert.equal(abhishek.profileUrl, 'https://abhishek-patel-in.github.io/');
+assert.ok(!abhishek.image && crewMarkup.includes('AP</span>'), 'Deferred photo uses existing initials');
+assert.ok(crewPreview[1].includes('Abhishek Patel') && crewMarkup.includes('Senior iOS developer'));
+assert.ok(!crewMarkup.includes('Connect on LinkedIn'), 'Crew link wording supports any profile platform');
+for (const profileUrl of ['https://github.com/example', 'https://twitter.com/example', 'https://example.com/']) {
+  const html = context.contentHTML('team', {members: [{...abhishek, profileUrl}]}, 'glass');
+  assert.ok(html.includes(`href="${profileUrl}"`) && html.includes('Visit profile'));
+  assert.equal((html.match(/<a /g) || []).length, 1, 'Each crew badge has exactly one profile link');
+}
+for (const profileUrl of ['javascript:alert(1)', 'data:text/html,test', 'http://example.com', 'mailto:test@example.com', '', null]) {
+  assert.throws(() => context.contentHTML('team', {members: [{...abhishek, profileUrl}]}, 'glass'));
 }
 const gokulHTML = context.contentHTML('speakers', {speakers: [source('speakers').speakers.find(speaker => speaker.name === 'Gokul Nair')]}, 'glass');
 assert.ok(gokulHTML.includes('GN</span>') && !gokulHTML.includes('profile-photo'), 'Gokul remains initials-only');
 assert.ok(containers.speakers[0].innerHTML.includes('Meet all 30 speakers'));
-assert.ok(containers.team[0].innerHTML.includes('Meet all 20 team members'));
+assert.ok(containers.team[0].innerHTML.includes('Meet all 21 team members'));
 assert.ok(containers.speakers[0].innerHTML.includes('Dharmesh Avaiya') && !containers.team[0].innerHTML.includes('Dharmesh Avaiya'));
 assert.equal((containers.app[0].innerHTML.match(/class="app-feature"/g) || []).length, source('app').features.length);
 const appData = source('app');
@@ -299,6 +327,7 @@ failedRequest = '';
 await ids['retry-content'].events.click();
 assert.equal(root.dataset.contentReady, 'ready');
 assert.equal(status.hidden, true);
+assert.equal(containers.team[0].innerHTML, crewMarkup, 'Content retry retains the same crew order');
 
 failedRequest = 'speakers.json';
 await context.loadCommunityContent();
@@ -363,6 +392,7 @@ assert.equal(menu.open, false, 'Following a menu link closes the menu');
 
 // Check parsed source, so retained theme comments do not count as active DOM.
 const activeHTML = readFileSync(new URL('./index.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+assert.match(activeHTML, /Built by <a href="https:\/\/abhishek-patel-in\.github\.io\/" target="_blank" rel="noopener noreferrer">Abhishek Patel<\/a>/, 'Footer name links to the supplied personal website');
 assert.equal((containers.connect[0].innerHTML.match(/<svg class="connect-symbol"/g) || []).length, source('links').links.length, 'Every Connect card uses a vector logo or location icon');
 for (const link of source('links').links) {
   assert.ok(activeHTML.includes(`<symbol id="connect-${link.icon}"`), `${link.name} has an actual icon definition`);
@@ -434,7 +464,8 @@ assert.equal(root.dataset.contentReady, 'ready');
 const bioButton = {...element(), hidden:true, isConnected:true};
 const preview = {...element(), clientWidth:220, clientHeight:81, scrollHeight:300, textContent:'First <script> paragraph.\nSecond paragraph.'};
 const avatar = {cloneNode: () => ({avatar:true})};
-const card = {...element(), querySelector: selector => ({'h3':{textContent:'Example speaker'}, '.member-initials':avatar, '.bio-preview':preview, '.profile-link':{href:'https://example.com/profile'}, '[data-read-bio]':bioButton})[selector]};
+const dialogLink = {href:'https://example.com/profile', textContent:'Connect on LinkedIn ↗'};
+const card = {...element(), querySelector: selector => ({'h3':{textContent:'Example speaker'}, '.member-initials':avatar, '.bio-preview':preview, '.profile-link':dialogLink, '[data-read-bio]':bioButton})[selector]};
 bioButton.closest = preview.closest = () => card;
 extraQueryNodes['.bio-preview'] = [preview];
 context.initContentUI();
@@ -442,8 +473,15 @@ assert.equal(bioButton.hidden, false, 'Only overflowing previews expose Read bio
 context.openProfile(bioButton);
 assert.equal(dialog.open, true);
 assert.equal(profileParts['[data-profile-name]'].textContent, 'Example speaker');
+assert.equal(profileParts['[data-profile-link]'].textContent, 'Connect on LinkedIn ↗', 'Speaker dialog retains its LinkedIn label');
 assert.equal(context.document.activeElement, profileParts['[data-profile-name]']);
 assert.deepEqual(Array.from(profileParts['[data-profile-bio]'].children, p => p.textContent), ['First <script> paragraph.', 'Second paragraph.'], 'Biographies create text paragraphs, never HTML');
+dialog.close();
+dialogLink.href = abhishek.profileUrl;
+dialogLink.textContent = 'Visit profile ↗';
+context.openProfile(bioButton);
+assert.equal(profileParts['[data-profile-link]'].href, abhishek.profileUrl);
+assert.equal(profileParts['[data-profile-link]'].textContent, 'Visit profile ↗', 'Crew dialog uses the card’s destination label');
 dialog.close();
 assert.equal(context.document.activeElement, bioButton);
 assert.equal(root.classList.values['profile-open'], undefined);

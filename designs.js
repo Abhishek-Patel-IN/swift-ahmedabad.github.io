@@ -20,6 +20,7 @@ function selectDesign(design, resetScroll = false) {
 */
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const links = {};
+const crewOrder = new Map();
 
 function currentAnchor(hash) {
   if (!hash) return '';
@@ -359,17 +360,27 @@ function contentHTML(type, data, theme) {
     const memberHTML = (member, index) => {
       if (member.image && !/^assets\/speakers\/[\w.-]+\.(?:jpe?g|png)$/.test(member.image)) throw new Error('Unsupported profile image');
       const speaker = type === 'speakers';
+      const destination = speaker ? member.linkedIn : member.profileUrl ?? member.linkedIn;
+      if (typeof destination !== 'string') throw new Error('Missing profile URL');
+      const profileURL = new URL(destination);
+      if (profileURL.protocol !== 'https:') throw new Error('Unsupported profile URL');
       const initials = text(member.name.split(/\s+/).map(word => word[0]).filter(Boolean).slice(0, 2).join(''));
       const avatar = `<span class="member-initials" aria-hidden="true">${initials}${member.image ? `<img class="profile-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span>`;
       const bio = `<p class="bio-preview">${text(member.about)}</p>`;
       const action = `<button type="button" data-read-bio aria-haspopup="dialog" aria-controls="profile-dialog" hidden>${speaker ? 'See more' : 'Read bio'}<span class="visually-hidden">: ${text(member.name)}</span></button>`;
       const previewID = `${theme}-speaker-preview-${index}`;
-      if (!speaker) return `<article class="community-member"><div class="crew-badge-paper"><span class="crew-badge-brand" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#bird"/></svg><span>SWIFT<br>AHMEDABAD</span></span><div class="crew-badge-identity">${avatar}<h3>${text(member.name)}</h3></div><span class="crew-badge-label" aria-hidden="true">Community crew</span>${bio}<div class="profile-actions">${action}${contentLink(member.linkedIn, 'Connect on LinkedIn ↗', 'profile-link')}</div></div></article>`;
+      if (!speaker) return `<article class="community-member"><div class="crew-badge-paper"><span class="crew-badge-brand" aria-hidden="true"><svg viewBox="0 0 100 100"><use href="#bird"/></svg><span>SWIFT<br>AHMEDABAD</span></span><div class="crew-badge-identity">${avatar}<h3>${text(member.name)}</h3></div><span class="crew-badge-label" aria-hidden="true">Community crew</span>${member.role ? `<p>${text(member.role)}</p>` : ''}${bio}<div class="profile-actions">${action}${contentLink(profileURL.href, 'Visit profile ↗', 'profile-link')}</div></div></article>`;
       return `<article class="community-member"${speaker ? ' data-speaker-preview' : ''}>${speaker ? `<button type="button" class="speaker-photo-button" data-speaker-preview-toggle aria-label="Toggle bio preview for ${text(member.name)}" aria-controls="${previewID}" aria-expanded="false" aria-hidden="true" disabled>${avatar}<span class="speaker-bio-hint" hidden>Bio</span></button><span class="speaker-reflection" aria-hidden="true">${initials}${member.image ? `<img class="speaker-reflection-photo" src="${text(member.image)}" alt="" width="80" height="80" loading="lazy" decoding="async">` : ''}</span>` : avatar}<div><h3>${text(member.name)}</h3>${speaker ? `<div id="${previewID}" data-speaker-preview-content>${bio}<div class="profile-actions">${action}</div></div><div class="profile-actions">` : `${bio}<div class="profile-actions">${action}`}${contentLink(member.linkedIn, 'Connect on LinkedIn ↗', 'profile-link')}</div></div></article>`;
     };
     const recency = data.recencyUnavailable ? '<p class="content-footnote" role="status">Speaker recency is unavailable. Profiles are shown alphabetically; try loading content again.</p>' : '';
     if (type === 'speakers') return `${recency}<div class="feature-gallery-heading speaker-gallery-heading"><p>Meet all ${members.length} speakers · Scroll to explore</p><div><button type="button" data-gallery-step="-1" aria-label="Previous speaker" aria-controls="${theme}-speaker-gallery">←</button><button type="button" data-gallery-step="1" aria-label="Next speaker" aria-controls="${theme}-speaker-gallery">→</button></div></div><div class="speaker-flow" data-gallery="speakers" id="${theme}-speaker-gallery" tabindex="0" role="region" aria-label="Speaker portraits; use arrow keys to browse">${members.map((member, index) => `<div class="speaker-slot">${memberHTML(member, index)}</div>`).join('')}</div>`;
-    return `<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${members.slice(4).map((member, index) => memberHTML(member, index + 4)).join('')}</div></details>`;
+    const expanded = members.slice(4);
+    expanded.forEach(member => {
+      const key = member.profileUrl ?? member.linkedIn;
+      if (!crewOrder.has(key)) crewOrder.set(key, Math.random());
+    });
+    expanded.sort((a, b) => crewOrder.get(a.profileUrl ?? a.linkedIn) - crewOrder.get(b.profileUrl ?? b.linkedIn));
+    return `<div class="member-grid">${members.slice(0, 4).map(memberHTML).join('')}</div><details class="team-directory"><summary>Meet all ${members.length} ${label} <span aria-hidden="true">+</span></summary><div class="member-grid">${expanded.map((member, index) => memberHTML(member, index + 4)).join('')}</div></details>`;
   }
 
   if (type === 'sponsors') return `<p class="sponsor-intro">${text(data.subtitle)}</p><div class="host-list">${data.sponsors.map(sponsor => {
@@ -599,6 +610,7 @@ function openProfile(button) {
   });
   profileDialog.querySelector('[data-profile-bio]').replaceChildren(...paragraphs);
   profileDialog.querySelector('[data-profile-link]').href = card.querySelector('.profile-link').href;
+  profileDialog.querySelector('[data-profile-link]').textContent = card.querySelector('.profile-link').textContent;
   profileInvoker = button;
   profileScroll = window.scrollY;
   document.documentElement.classList.add('profile-open');
