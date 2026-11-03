@@ -27,7 +27,7 @@ cp *.html *.css *.js *.json cityscape.mjs headline-glass.mjs dist/
 cp -R assets css dist/
 ```
 
-For a subsequent release, clear the generated `dist/` directory first so removed files do not survive. Use the Sites source helper to commit/push and package that source, then save and deploy the returned version with public access. `dist/` is ignored build output; local AI documents and inactive untracked prototypes are not part of the exported source. Never include credentials in files or Git.
+For a subsequent release, clear the generated `dist/` directory first so removed files do not survive. Use the Sites source helper to commit/push and package that source, then save and deploy the returned version with public access. `dist/` is ignored build output. Keep the four excluded root working documents outside the source export. Tracked feedback notes and retired prototype sources may remain in Git; the copy commands above exclude Markdown and inactive prototype modules from the public runtime. Never include credentials in files or Git.
 
 Checks: `node designs.check.mjs`, `node cityscape.check.mjs`, `node navigation.check.mjs` (retained bento page), and `node headline-glass.check.mjs`. Review the homepage over HTTP before publishing.
 
