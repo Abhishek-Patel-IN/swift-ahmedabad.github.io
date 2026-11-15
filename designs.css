@@ -70,8 +70,11 @@ button{color:inherit}
 .liquid-footer{border-top:1px solid #fff2;max-width:1100px;margin:auto;padding:22px 20px 0;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px 24px;font-size:10px;line-height:1.6;color:#80808f}
 .liquid-footer>div{display:flex;flex-wrap:wrap;gap:0 20px}
 .liquid-footer a{display:inline-flex;align-items:center;min-height:44px}
+.liquid-footer .footer-credit-link{min-height:32px;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px}
+.footer-credits{display:flex;flex-direction:column;align-items:flex-end;gap:0}
 .liquid-footer>span:last-of-type{justify-self:end}
 .liquid-footer>p{grid-column:1/-1;margin-inline:calc(-1 * var(--section-gutter));padding:16px var(--section-gutter);background:#17171b;text-align:center;font-size:.75rem}
+@media(min-width:761px){.liquid-footer{align-items:start}.liquid-footer>span:first-of-type{display:inline-flex;align-items:center;min-height:44px}.footer-credits{padding-top:6px}}
 @media(max-width:1100px){
 .liquid-nav{margin-left:28px;margin-right:28px}
 .liquid-hero{padding-top:55px}
@@ -109,6 +112,7 @@ html{scroll-padding-top:calc(var(--nav-height) + 24px)}
 .liquid-join>p:not(.liquid-kicker){font-size:12px}
 .liquid-footer{grid-template-columns:1fr;padding:22px 22px 0;font-size:9px;gap:12px}
 .liquid-footer>span:last-of-type{justify-self:start}
+.footer-credits{align-items:flex-start}
 }
 @media(prefers-reduced-motion:reduce){
 html{scroll-behavior:auto}

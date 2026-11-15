@@ -392,7 +392,7 @@ assert.equal(menu.open, false, 'Following a menu link closes the menu');
 
 // Check parsed source, so retained theme comments do not count as active DOM.
 const activeHTML = readFileSync(new URL('./index.html', import.meta.url), 'utf8').replace(/<!--[\s\S]*?-->/g, '');
-assert.match(activeHTML, /Built by <a href="https:\/\/abhishek-patel-in\.github\.io\/" target="_blank" rel="noopener noreferrer">Abhishek Patel<\/a>/, 'Footer name links to the supplied personal website');
+assert.match(activeHTML, /<span class="footer-credits">\s*<span>Design &amp; Build by <a class="footer-credit-link" href="https:\/\/abhishek-patel-in\.github\.io\/" target="_blank" rel="noopener noreferrer">Abhishek Patel<\/a><\/span>\s*<span>Development Assistance by <a class="footer-credit-link" href="https:\/\/www\.linkedin\.com\/in\/ratnesh-jain-7a2270146\/" target="_blank" rel="noopener noreferrer">Ratnesh Jain<\/a><\/span>\s*<\/span>/, 'Footer credits link both named contributors safely');
 assert.equal((containers.connect[0].innerHTML.match(/<svg class="connect-symbol"/g) || []).length, source('links').links.length, 'Every Connect card uses a vector logo or location icon');
 for (const link of source('links').links) {
   assert.ok(activeHTML.includes(`<symbol id="connect-${link.icon}"`), `${link.name} has an actual icon definition`);
